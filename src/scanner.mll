@@ -1,6 +1,6 @@
 (* Ocamllex scanner for Meteor*)
 
-{ open Meteorparse }
+{ open Parser }
 
 let digit = ['0'-'9']
 let letter = ['a'-'z' 'A'-'Z']
@@ -61,6 +61,7 @@ rule token =
         | "/."          { FDIVIDE }
         | "**."         { FPOWER }
         (* BOOLEAN OPERATORS *)
+        | '!'           { NOT }
         | "&&"          { AND }
         | "||"          { OR }
         | "=="          { EQ }
