@@ -8,7 +8,7 @@ let letter = ['a'-'z' 'A'-'Z']
 rule token = 
     parse eof     {EOF}
         (* TYPES *)
-        | "int"         { INITTYPE }
+        | "int"         { INTTYPE }
         | "char"        { CHARTYPE }
         | "float"       { FLOATTYPE }
         | "bool"        { BOOLTYPE }
