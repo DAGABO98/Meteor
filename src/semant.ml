@@ -63,7 +63,7 @@ let check (globals, functions) =
   let check_func func =
     (* Make sure no formals or locals are void or duplicates *)
     check_binds "formal" func.formals;
-    check_binds "local" unc.locals;
+    check_binds "local" func.locals;
 
     (* Raise an exception if the given rvalue type cannot be assigned to
        the given lvalue type *)
@@ -88,7 +88,7 @@ let check (globals, functions) =
       | FloatLit l -> (Float, SFloatLit l)
       | BoolLit l -> (Bool, SBoolLit l)
       | CharLit l -> (Char, SCharLit l)
-      | StrLit l -> (String, StrLit l)
+      | StrLit l -> (String, SStrLit l)
       | Var var -> (type_of_identifier var, SVar var)
       | Assign(var, e) as ex ->
         let lt = type_of_identifier var

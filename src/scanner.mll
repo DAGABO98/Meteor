@@ -45,9 +45,9 @@ rule token =
         | "true"        { BLIT(true) }
         | "false"       { BLIT(false) }
         (* CHARACTER LITERALS *)
-        | "'" ( _ as ch) "'"  { CHARLIT(ch) }
+        | "'"( _ as ch)"'"  { CHARLIT(ch) }
         (* STRING LITERALS *)
-        | '"' ( _ as str) '"' { STRLIT(str) }
+        (*| '"'( _ as str)'"' { STRLIT(str) }*)
         (* NUMBER OPERATORS *)
         | '+'           { PLUS }
         | '-'           { MINUS }

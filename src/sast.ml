@@ -16,7 +16,7 @@ and sx =
   | SAssign of string * sexpr
   | SPrint of string
   | SCall of string * sexpr list
-  | SLet of SAssign * sexpr
+  | SLet of string * sexpr
 
 type sstmt =
     SBlock of sstmt list

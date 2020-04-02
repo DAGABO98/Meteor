@@ -13,7 +13,7 @@
 *)
 
 module L = Llvm
-module A = Ast
+open Ast
 open Sast
 open Pretty_sast_print
 
@@ -34,8 +34,8 @@ let translate (globals, functions) =
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
-      A.Int   -> i32_t
-    | A.Bool  -> i1_t
+      Int   -> i32_t
+    | Bool  -> i1_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -107,17 +107,13 @@ let translate (globals, functions) =
         let e1' = build_expr builder e1
         and e2' = build_expr builder e2 in
         (match op with
-           A.Add     -> L.build_add
-         | A.Sub     -> L.build_sub
-         | A.Mult    -> L.build_mult
-         | A.Div     -> L.build_div
-         | A.Pow     -> L.build_pow
-         | A.Mod     -> L.build_mod
-         | A.And     -> L.build_and
-         | A.Or      -> L.build_or
-         | A.Equal   -> L.build_icmp L.Icmp.Eq
-         | A.Neq     -> L.build_icmp L.Icmp.Ne
-         | A.Less    -> L.build_icmp L.Icmp.Slt
+           Add     -> L.build_add
+         | Sub     -> L.build_sub
+         | And     -> L.build_and
+         | Or      -> L.build_or
+         | Eq      -> L.build_icmp L.Icmp.Eq
+         | Neq     -> L.build_icmp L.Icmp.Ne
+         | Lt      -> L.build_icmp L.Icmp.Slt
         ) e1' e2' "tmp" builder
       | SCall ("print", [e]) ->
         L.build_call printf_func [| int_format_str ; (build_expr builder e) |]
@@ -185,5 +181,5 @@ let translate (globals, functions) =
 
   in
 
-  List.iter build_function_body functions;
+  List.iter build_fnction_body functions;
   the_module

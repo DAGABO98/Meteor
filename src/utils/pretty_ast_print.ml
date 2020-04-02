@@ -1,4 +1,6 @@
 (* Pretty-printing functions *)
+open Ast
+
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
@@ -32,7 +34,7 @@ let rec string_of_expr = function
   | FloatLit(l) -> string_of_float l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | CharLit(c) -> c
+  | CharLit(c) -> String.make 1 c
   | StrLit(s) -> s
   | Var(s) -> s
   | Binop(e1, o, e2) ->

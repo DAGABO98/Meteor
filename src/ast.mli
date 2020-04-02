@@ -22,8 +22,8 @@ type expr =
     | Binop of expr * op * expr
     | Print of string
     | Call of string * expr list
-    | Let of (assign * expr)
-and assign = Assign of (string * expr)
+    | Let of (string * expr * expr)
+    | Assign of (string * expr)
 
 type stmt =
     Block of stmt list
@@ -34,9 +34,7 @@ type stmt =
   | Return of expr
 
 (* int x: name binding *)
-type bind = 
-    | typ * string
-    | string * expr
+type bind = typ * string
 
 (* func_def: ret_typ fname formals locals body *)
 type func_def = {
