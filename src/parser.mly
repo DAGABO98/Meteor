@@ -16,7 +16,7 @@ open Ast
 %token <bool> BLIT
 %token <char> CHARLIT
 %token <string> STRLIT
-%token <string> ID
+%token <string> VAR
 
 %start program
 %type <Ast.program> program
@@ -48,7 +48,7 @@ vdecl_list:
 
 /* int x */
 vdecl:
-  typ ID { ($1, $2) }
+  typ VAR { ($1, $2) }
 
 typ:
     | INTTYPE       { Int }
@@ -56,7 +56,7 @@ typ:
     | FLOATTYPE     { Float }
     | BOOLTYPE      { Bool }
     | STRINGTYPE    { String }
-    | ID            { Tvar($1) }
+    | VAR           { Tvar($1) }
     | typ ARROW typ { Tarrow($1,$3) }
 
 /* fdecl */
@@ -102,7 +102,7 @@ expr:
   | BLIT             { BoolLit($1)            }
   | CHARLIT          { CharLit($1)            }
   | STRLIT           { StrLit($1)             }
-  | ID               { Var($1)                 }
+  | VAR              { Var($1)                 }
   /* BOOLEAN OPERATIONS */
   | expr AND expr    { Binop($1, And, $3) }
   | expr OR expr     { Binop($1, Or, $3) }
@@ -134,10 +134,10 @@ expr:
   | expr FPOWER  expr  { Binop($1, FPow,   $3)   }
 
 
-  | ID ASSIGN expr   { Assign($1, $3)         }
+  | VAR ASSIGN expr   { Assign($1, $3)         }
   | LPAREN expr RPAREN { $2                   }
   /* call */
-  | ID LPAREN args_opt RPAREN { Call ($1, $3)  }
+  | VAR LPAREN args_opt RPAREN { Call ($1, $3)  }
 
 /* args_opt*/
 args_opt:

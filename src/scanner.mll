@@ -79,7 +79,7 @@ rule token =
         (* ASSIGN *)
         | '='           { ASSIGN }
         (* IDENTIFIERS *)
-        | letter (digit | letter | '_' | '-')* as lem { ID(lem) }
+        | letter (digit | letter | '_' | '-')* as lem { VAR(lem) }
         (* WHITESPACE *)
         | [' ' '\t' '\r' '\n'] { token lexbuf } 
         | "#"                  { comment lexbuf }

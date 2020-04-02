@@ -35,7 +35,7 @@ type stmt =
 
 (* int x: name binding *)
 type bind = 
-    | Annot of (typ * string)
+    | typ * string
     | string * expr
 
 (* func_def: ret_typ fname formals locals body *)
