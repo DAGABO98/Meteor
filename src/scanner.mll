@@ -22,11 +22,10 @@ rule token =
         | "mut"         { MUT }
         | "while"       { WHILE }
         | "for"         { FOR }
-        | "print"       { PRINT }
         | "return"      { RETURN }
         (* BRACES *)
-        | '['           { LSBRACE }
-        | ']'           { RSBRACE }
+        | '['           { LBRACK }
+        | ']'           { RBRACK }
         | '{'           { LBRACE }
         | '}'           { RBRACE }
         | '('           { LPAREN }

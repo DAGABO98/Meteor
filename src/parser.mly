@@ -4,12 +4,14 @@
 open Ast
 %}
 
-%token SEMI LSBRACE RSBRACE LBRACE RBRACE LPAREN RPAREN ASSIGN
-%token PLUS MINUS TIMES DIVIDE POWER MOD FPLUS FMINUS FTIMES FDIVIDE FPOWER
+%token SEMI LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN
+%token PLUS MINUS TIMES DIVIDE POWER MOD
+%token ASSIGN
+%token FPLUS FMINUS FTIMES FDIVIDE FPOWER
+%token INTTYPE FLOATTYPE BOOLTYPE CHARTYPE STRINGTYPE
 %token NOT AND OR EQ FEQ NEQ FNEQ LT FLT GT FGT LEQ FLEQ GEQ FGEQ
-%token EOF LET NEW IF ELSE FUNC MUT WHILE FOR PRINT RETURN
-%token INTTYPE CHARTYPE FLOATTYPE BOOLTYPE STRINGTYPE
-%token COMMA COMP ARROW REF DOT
+%token LET NEW IF ELSE FUNC MUT WHILE FOR PRINT
+%token RETURN COMMA COMP ARROW REF DOT
 
 %token <int> INTLIT
 %token <float> FLOATLIT
@@ -18,11 +20,15 @@ open Ast
 %token <string> STRLIT
 %token <string> VAR
 
+%token EOF
+
 %start program
 %type <Ast.program> program
 
 %right ASSIGN
-%left OR AND NOT
+%left OR 
+%left AND 
+%right NOT
 %left EQ FEQ NEQ FNEQ LT FLT GT FGT LEQ FLEQ GEQ FGEQ
 %right ARROW COMP DOT
 %left ELSE
@@ -38,12 +44,12 @@ program:
   decls EOF { $1}
 
 decls:
-   /* nothing */ { ([], [])               }
+ |  /* nothing */ { ([], [])               }
  | vdecl SEMI decls { (($1 :: fst $3), snd $3) }
  | fdecl decls { (fst $2, ($1 :: snd $2)) }
 
 vdecl_list:
-  /*nothing*/ { [] }
+  | /*nothing*/ { [] }
   | vdecl SEMI vdecl_list  {  $1 :: $3 }
 
 /* int x */
@@ -74,19 +80,19 @@ fdecl:
 
 /* formals_opt */
 formals_opt:
-  /*nothing*/ { [] }
+  | /*nothing*/ { [] }
   | formals_list { $1 }
 
 formals_list:
-  vdecl { [$1] }
+  | vdecl { [$1] }
   | vdecl COMMA formals_list { $1::$3 }
 
 stmt_list:
-  /* nothing */ { [] }
+  | /* nothing */ { [] }
   | stmt stmt_list  { $1::$2 }
 
 stmt:
-    expr SEMI                               { Expr $1      }
+  | expr SEMI                               { Expr $1      }
   | LBRACE stmt_list RBRACE                 { Block $2 }
   /* if (condition) { block1} else {block2} */
   /* if (condition) stmt else stmt */
@@ -97,7 +103,7 @@ stmt:
 
 expr:
   /* LITERALS */
-    INTLIT           { IntLit($1)             }
+  | INTLIT           { IntLit($1)             }
   | FLOATLIT         { FloatLit($1)           }
   | BLIT             { BoolLit($1)            }
   | CHARLIT          { CharLit($1)            }
@@ -141,9 +147,9 @@ expr:
 
 /* args_opt*/
 args_opt:
-  /*nothing*/ { [] }
+  | /*nothing*/ { [] }
   | args { $1 }
 
 args:
-  expr  { [$1] }
+  | expr  { [$1] }
   | expr COMMA args { $1::$3 } 

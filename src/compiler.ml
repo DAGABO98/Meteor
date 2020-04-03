@@ -14,7 +14,7 @@ let () =
     ("-s", Arg.Unit (set_action Sast), "Print the SAST");
     ("-l", Arg.Unit (set_action LLVM_IR), "Print the generated LLVM IR");
   ] in
-  let usage_msg = "usage: ./meteor.native [-a|-s|-l] [file.mtr]" in
+  let usage_msg = "usage: ./compiler.native [-a|-s|-l] [file.mtr]" in
   let channel = ref stdin in
   Arg.parse speclist (fun filename -> channel := open_in filename) usage_msg;
 
