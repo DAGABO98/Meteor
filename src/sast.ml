@@ -23,7 +23,7 @@ type sstmt =
   | SExpr of sexpr
   | SIf of sexpr * sstmt * sstmt
   | SWhile of sexpr * sstmt
-  | For of sexpr list * sstmt
+  | SFor of sexpr list * sstmt
   | SReturn of sexpr
 
 (* func_def: ret_typ fname formals locals body *)

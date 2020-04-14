@@ -80,6 +80,8 @@ let rec string_of_expr = function
   | CharLit(c) -> String.make 1 c
   | StrLit(s) -> s
   | Var(s) -> s
+  | Mut(m) -> "mut " ^ string_of_expr m
+  | New(s) -> "new " ^ string_of_expr s
   | Binop(e1, o, e2) ->
     string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
@@ -94,6 +96,8 @@ let rec string_of_stmt = function
   | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
                       string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | For(es, s) -> "for (" ^ String.concat "" (List.map string_of_expr es) ^ ") " 
+                       ^ string_of_stmt s
 
 let string_of_typ = function
     Int -> "int"

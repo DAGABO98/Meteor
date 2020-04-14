@@ -90,14 +90,18 @@ stmt_list:
   | /* nothing */ { [] }
   | stmt stmt_list  { $1::$2 }
 
+expr_list:
+  | /* nothing */ { [] }
+  | expr expr_list { $1::$2 }
+
 stmt:
   | expr SEMI                               { Expr $1      }
   | LBRACE stmt_list RBRACE                 { Block $2 }
   /* if (condition) { block1} else {block2} */
   /* if (condition) stmt else stmt */
   | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
-  | WHILE LPAREN expr RPAREN stmt           { While ($3, $5)  }
-  /* return */
+  | WHILE LPAREN expr RPAREN stmt           { While ($3, $5) }
+  | FOR LPAREN expr_list RPAREN stmt             { For($3, $5)    }
   | RETURN expr SEMI                        { Return $2      }
 
 expr:
