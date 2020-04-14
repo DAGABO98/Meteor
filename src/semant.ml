@@ -2,8 +2,6 @@
 
 open Ast
 open Sast
-open Pretty_ast_print
-open Pretty_sast_print
 
 module StringMap = Map.Make(String)
 

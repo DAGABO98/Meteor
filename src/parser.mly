@@ -8,7 +8,7 @@ open Ast
 %token PLUS MINUS TIMES DIVIDE POWER MOD
 %token ASSIGN
 %token FPLUS FMINUS FTIMES FDIVIDE FPOWER
-%token INTTYPE FLOATTYPE BOOLTYPE CHARTYPE STRINGTYPE
+%token INTTYPE FLOATTYPE BOOLTYPE CHARTYPE STRINGTYPE FOO
 %token NOT AND OR EQ FEQ NEQ FNEQ LT FLT GT FGT LEQ FLEQ GEQ FGEQ
 %token LET NEW IF ELSE FUNC MUT WHILE FOR PRINT
 %token RETURN COMMA COMP ARROW REF DOT
@@ -62,8 +62,7 @@ typ:
     | FLOATTYPE     { Float }
     | BOOLTYPE      { Bool }
     | STRINGTYPE    { String }
-    | VAR           { Tvar($1) }
-    | typ ARROW typ { Tarrow($1,$3) }
+    | FOO           { Foo }
 
 /* fdecl */
 fdecl:

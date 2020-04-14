@@ -1,6 +1,49 @@
-(* Pretty-printing functions *)
-open Ast
+(* Abstract Syntax Tree and functions for printing it *)
 
+type typ = Int | Char | Float | Bool | String | Foo
+
+type op = 
+      Add | Sub | Mult | Div | Pow | Mod
+    | FAdd | FSub | FMult | FDiv | FPow
+    | And | Or | Not
+    | Eq | FEq | Neq | FNeq | Lt | FLt | Gt | FGt
+    | Leq | FLeq | Geq | FGeq 
+
+
+type expr = 
+    | IntLit of int | FloatLit of float | BoolLit of bool
+    | CharLit of char | StrLit of string
+    | Var of string
+    | Mut of expr
+    | New of expr
+    | Binop of expr * op * expr
+    | Call of string * expr list
+    | Let of string * expr * expr
+    | Assign of string * expr
+
+type stmt =
+    Block of stmt list
+  | Expr of expr
+  | If of expr * stmt * stmt
+  | While of expr * stmt
+  | For of expr list * stmt
+  | Return of expr
+
+(* int x: name binding *)
+type bind = typ * string
+
+(* func_def: ret_typ fname formals locals body *)
+type func_def = {
+  rtyp: typ;
+  fname: string;
+  formals: bind list;
+  locals: bind list;
+  body: stmt list;
+}
+
+type program = bind list * func_def list
+
+(* Pretty-printing functions *)
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
@@ -58,6 +101,7 @@ let string_of_typ = function
   | Float -> "float"
   | Bool -> "bool"
   | String -> "string"
+  | Foo -> "foo"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
@@ -73,4 +117,3 @@ let string_of_program (vars, funcs) =
   "\n\nParsed program: \n\n" ^
   String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)
-

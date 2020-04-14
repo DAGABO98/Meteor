@@ -5,14 +5,17 @@
 let digit = ['0'-'9']
 let letter = ['a'-'z' 'A'-'Z']
 
-rule token = 
-    parse eof     {EOF}
+rule token = parse
+        (* WHITESPACE *)
+         [' ' '\t' '\r' '\n'] { token lexbuf } 
+        | "#"                  { comment lexbuf }
         (* TYPES *)
         | "int"         { INTTYPE }
         | "char"        { CHARTYPE }
         | "float"       { FLOATTYPE }
         | "bool"        { BOOLTYPE }
         | "string"      { STRINGTYPE }
+        | "foo"         { FOO }
         (* KEYWORDS *)
         | "let"         { LET }
         | "new"         { NEW }
@@ -79,9 +82,7 @@ rule token =
         | '='           { ASSIGN }
         (* IDENTIFIERS *)
         | letter (digit | letter | '_' | '-')* as lem { VAR(lem) }
-        (* WHITESPACE *)
-        | [' ' '\t' '\r' '\n'] { token lexbuf } 
-        | "#"                  { comment lexbuf }
+        | eof { EOF }
         | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse

@@ -13,9 +13,8 @@
 *)
 
 module L = Llvm
-open Ast
+module A = Ast
 open Sast
-open Pretty_sast_print
 
 module StringMap = Map.Make(String)
 
@@ -32,10 +31,20 @@ let translate (globals, functions) =
   and i8_t       = L.i8_type     context
   and i1_t       = L.i1_type     context in
 
+  (* Declare struct Foo *)
+
+  let struct_foo_t : L.lltype = 
+      L.named_struct_type context "Foo" in
+
+  let _ = 
+      L.struct_set_body struct_foo_t
+      [| i32_t |] false in
+
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
-      Int   -> i32_t
-    | Bool  -> i1_t
+      A.Int   -> i32_t
+    | A.Bool  -> i1_t
+    | A.Foo -> struct_foo_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -49,6 +58,15 @@ let translate (globals, functions) =
     L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
     L.declare_function "printf" printf_t the_module in
+
+  (* Declare each C function*)
+
+  let incFoo_t : L.lltype = L.function_type (L.void_type context)
+    [| L.pointer_type struct_foo_t |] in
+
+  let incFoo : L.llvalue = L.declare_function "incFoo" incFoo_t the_module in
+
+  let initFoo : L.llvalue = L.declare_function "initFoo" incFoo_t the_module in
 
   (* Define each function (arguments and return type) so we can
      call it even before we've created its body *)
@@ -82,6 +100,10 @@ let translate (globals, functions) =
        * resulting registers to our map *)
       and add_local m (t, n) =
         let local_var = L.build_alloca (ltype_of_typ t) n builder
+        in let _ = if t = A.Foo then 
+                            (ignore (L.build_call initFoo [| local_var |] "" builder);
+                            L.build_call incFoo [| local_var |] "" builder)
+                else local_var
         in StringMap.add n local_var m
       in
 
@@ -107,13 +129,13 @@ let translate (globals, functions) =
         let e1' = build_expr builder e1
         and e2' = build_expr builder e2 in
         (match op with
-           Add     -> L.build_add
-         | Sub     -> L.build_sub
-         | And     -> L.build_and
-         | Or      -> L.build_or
-         | Eq      -> L.build_icmp L.Icmp.Eq
-         | Neq     -> L.build_icmp L.Icmp.Ne
-         | Lt      -> L.build_icmp L.Icmp.Slt
+           A.Add     -> L.build_add
+         | A.Sub     -> L.build_sub
+         | A.And     -> L.build_and
+         | A.Or      -> L.build_or
+         | A.Eq      -> L.build_icmp L.Icmp.Eq
+         | A.Neq     -> L.build_icmp L.Icmp.Ne
+         | A.Lt      -> L.build_icmp L.Icmp.Slt
         ) e1' e2' "tmp" builder
       | SCall ("print", [e]) ->
         L.build_call printf_func [| int_format_str ; (build_expr builder e) |]
