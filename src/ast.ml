@@ -1,6 +1,11 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
-type typ = Int | Char | Float | Bool | String | Foo
+type b_type = Int | Char | Float | Bool | String | Foo  
+
+type typ = 
+    | Mut of b_type 
+    | Ref of b_type
+    | RType of b_type
 
 type op = 
       Add | Sub | Mult | Div | Pow | Mod
@@ -14,7 +19,6 @@ type expr =
     | IntLit of int | FloatLit of float | BoolLit of bool
     | CharLit of char | StrLit of string
     | Var of string
-    | Mut of expr
     | New of expr
     | Binop of expr * op * expr
     | Call of string * expr list
@@ -80,7 +84,6 @@ let rec string_of_expr = function
   | CharLit(c) -> String.make 1 c
   | StrLit(s) -> s
   | Var(s) -> s
-  | Mut(m) -> "mut " ^ string_of_expr m
   | New(s) -> "new " ^ string_of_expr s
   | Binop(e1, o, e2) ->
     string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
@@ -100,12 +103,15 @@ let rec string_of_stmt = function
                        ^ string_of_stmt s
 
 let string_of_typ = function
-    Int -> "int"
-  | Char -> "char"
-  | Float -> "float"
-  | Bool -> "bool"
-  | String -> "string"
-  | Foo -> "foo"
+    Ref(x) -> "&"
+  | Mut(x) -> "mut"
+  | RType(x) -> match x with
+            | Int -> "int"
+            | Char -> "char"
+            | Float -> "float"
+            | Bool -> "bool"
+            | String -> "string"
+            | Foo -> "foo"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

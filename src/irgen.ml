@@ -42,9 +42,14 @@ let translate (globals, functions) =
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
-      A.Int   -> i32_t
-    | A.Bool  -> i1_t
-    | A.Foo -> struct_foo_t
+      A.Mut(x)   -> i32_t
+      (*TODO*)
+    | A.Ref(x)  -> i32_t
+      (*TODO*)
+    | A.RType(x) -> match x with 
+                    | Foo -> struct_foo_t
+                    | Int -> i32_t
+                    | Bool -> i1_t
   in
 
   (* Create a map of global variables after creating each *)
@@ -100,7 +105,7 @@ let translate (globals, functions) =
        * resulting registers to our map *)
       and add_local m (t, n) =
         let local_var = L.build_alloca (ltype_of_typ t) n builder
-        in let _ = if t = A.Foo then 
+        in let _ = if t = A.RType(Foo) then 
                             (ignore (L.build_call initFoo [| local_var |] "" builder);
                             L.build_call incFoo [| local_var |] "" builder)
                 else local_var

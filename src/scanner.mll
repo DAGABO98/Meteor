@@ -16,13 +16,13 @@ rule token = parse
         | "bool"        { BOOLTYPE }
         | "string"      { STRINGTYPE }
         | "foo"         { FOO }
+        | "mut"         { MUT }
         (* KEYWORDS *)
         | "let"         { LET }
         | "new"         { NEW }
         | "if"          { IF }
         | "else"        { ELSE }
         | "func"        { FUNC }
-        | "mut"         { MUT }
         | "while"       { WHILE }
         | "for"         { FOR }
         | "return"      { RETURN }

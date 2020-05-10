@@ -28,9 +28,9 @@ let check (globals, functions) =
   (* Collect function declarations for built-in functions: no bodies *)
   let built_in_decls =
     StringMap.add "print" {
-      rtyp = Int;
+      rtyp = RType(Int);
       fname = "print";
-      formals = [(Int, "x")];
+      formals = [(RType(Int), "x")];
       locals = []; body = [] } StringMap.empty
   in
 
@@ -82,11 +82,11 @@ let check (globals, functions) =
 
     (* Return a semantically-checked expression, i.e., with a type *)
     let rec check_expr = function
-        IntLit l -> (Int, SIntLit l)
-      | FloatLit l -> (Float, SFloatLit l)
-      | BoolLit l -> (Bool, SBoolLit l)
-      | CharLit l -> (Char, SCharLit l)
-      | StrLit l -> (String, SStrLit l)
+        IntLit l -> (RType(Int), SIntLit l)
+      | FloatLit l -> (RType(Float), SFloatLit l)
+      | BoolLit l -> (RType(Bool), SBoolLit l)
+      | CharLit l -> (RType(Char), SCharLit l)
+      | StrLit l -> (RType(String), SStrLit l)
       | Var var -> (type_of_identifier var, SVar var)
       | Assign(var, e) as ex ->
         let lt = type_of_identifier var
@@ -107,13 +107,13 @@ let check (globals, functions) =
         if t1 = t2 then
           (* Determine expression type based on operator and operand types *)
           let t = match op with
-              Add | Sub | Mult | Div | Pow | Mod when t1 = Int -> Int
-            | FAdd | FSub | FMult | FDiv | FPow when t1 = Float -> Float
-            | Eq | Neq when t1 = Int -> Bool
-            | FEq | FNeq when t1 = Float -> Bool
-            | Lt | Gt | Leq | Geq when t1 = Int -> Bool
-            | FLt | FGt | FLeq | FGeq when t1 = Float -> Bool
-            | And | Or | Not when t1 = Bool -> Bool
+              Add | Sub | Mult | Div | Pow | Mod when t1 = RType(Int) -> RType(Int)
+            | FAdd | FSub | FMult | FDiv | FPow when t1 = RType(Float) -> RType(Float)
+            | Eq | Neq when t1 = RType(Int) -> RType(Bool)
+            | FEq | FNeq when t1 = RType(Float) -> RType(Bool)
+            | Lt | Gt | Leq | Geq when t1 = RType(Int) -> RType(Bool)
+            | FLt | FGt | FLeq | FGeq when t1 = RType(Float) -> RType(Bool)
+            | And | Or | Not when t1 = RType(Bool) -> RType(Bool)
             | _ -> raise (Failure err)
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
@@ -137,7 +137,7 @@ let check (globals, functions) =
     let check_bool_expr e =
       let (t, e') = check_expr e in
       match t with
-      | Bool -> (t, e')
+      | RType(Bool) -> (t, e')
       |  _ -> raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
     in
 

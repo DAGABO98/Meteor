@@ -54,9 +54,17 @@ vdecl_list:
 
 /* int x */
 vdecl:
-  typ VAR { ($1, $2) }
+  LET VAR ARROW typ { ($4, $2) }
+
+vinst:
+  VAR ARROW typ { ($3, $1) }
 
 typ:
+    | b_typ           { RType($1) }
+    | MUT REF b_typ   { Mut($3) }
+    | REF b_typ       { Ref($2) }
+
+b_typ:
     | INTTYPE       { Int }
     | CHARTYPE      { Char }
     | FLOATTYPE     { Float }
@@ -64,16 +72,17 @@ typ:
     | STRINGTYPE    { String }
     | FOO           { Foo }
 
+
 /* fdecl */
 fdecl:
-  vdecl LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+  FUNC VAR LPAREN formals_opt RPAREN ARROW typ LBRACE vdecl_list stmt_list RBRACE
   {
     {
-      rtyp=fst $1;
-      fname=snd $1;
-      formals=$3;
-      locals=$6;
-      body=$7
+      rtyp=$7;
+      fname=$2;
+      formals=$4;
+      locals=$9;
+      body=$10
     }
   }
 
@@ -83,8 +92,8 @@ formals_opt:
   | formals_list { $1 }
 
 formals_list:
-  | vdecl { [$1] }
-  | vdecl COMMA formals_list { $1::$3 }
+  | vinst { [$1] }
+  | vinst COMMA formals_list { $1::$3 }
 
 stmt_list:
   | /* nothing */ { [] }

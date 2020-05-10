@@ -9,7 +9,6 @@ and sx =
   | SBoolLit of bool
   | SCharLit of char
   | SStrLit of string
-  | SMut of sexpr
   | SNew of sexpr
   | SVar of string
   | SBinop of sexpr * op * sexpr
