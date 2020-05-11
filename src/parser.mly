@@ -5,9 +5,9 @@ open Ast
 %}
 
 %token SEMI LBRACK RBRACK LBRACE RBRACE LPAREN RPAREN
-%token PLUS MINUS TIMES DIVIDE POWER MOD
+%token PLUS MINUS TIMES DIVIDE
 %token ASSIGN
-%token FPLUS FMINUS FTIMES FDIVIDE FPOWER
+%token FPLUS FMINUS FTIMES FDIVIDE
 %token INTTYPE FLOATTYPE BOOLTYPE CHARTYPE STRINGTYPE FOO
 %token NOT AND OR EQ FEQ NEQ FNEQ LT FLT GT FGT LEQ FLEQ GEQ FGEQ
 %token LET NEW IF ELSE FUNC MUT WHILE FOR PRINT
@@ -34,8 +34,7 @@ open Ast
 %left ELSE
 %right MUT
 %left PLUS MINUS FPLUS FMINUS
-%left TIMES DIVIDE MOD FTIMES FDIVIDE
-%left POWER FPOWER
+%left TIMES DIVIDE FTIMES FDIVIDE
 
 %%
 
@@ -101,7 +100,7 @@ stmt_list:
 
 expr_list:
   | /* nothing */ { [] }
-  | expr expr_list { $1::$2 }
+  | expr expr_list  { $1::$2 }
 
 stmt:
   | expr SEMI                               { Expr $1      }
@@ -142,14 +141,11 @@ expr:
   | expr MINUS  expr   { Binop($1, Sub,   $3)   }
   | expr TIMES  expr   { Binop($1, Mult,   $3)   }
   | expr DIVIDE  expr  { Binop($1, Div,   $3)   }
-  | expr POWER  expr   { Binop($1, Pow,   $3)   }
-  | expr MOD  expr     { Binop($1, Mod,   $3)   }
   | expr MINUS  expr   { Binop($1, Sub,   $3)   }
   | expr FPLUS   expr  { Binop($1, FAdd,   $3)   }
   | expr FMINUS  expr  { Binop($1, FSub,   $3)   }
   | expr FTIMES  expr  { Binop($1, FMult,   $3)   }
   | expr FDIVIDE  expr { Binop($1, FDiv,   $3)   }
-  | expr FPOWER  expr  { Binop($1, FPow,   $3)   }
 
 
   | VAR ASSIGN expr   { Assign($1, $3)         }

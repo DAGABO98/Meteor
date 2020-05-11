@@ -29,7 +29,8 @@ let translate (globals, functions) =
   (* Get types from the context *)
   let i32_t      = L.i32_type    context
   and i8_t       = L.i8_type     context
-  and i1_t       = L.i1_type     context in
+  and i1_t       = L.i1_type     context 
+  and float_t    = L.float_type  context in
 
   (* Declare struct Foo *)
 
@@ -47,9 +48,13 @@ let translate (globals, functions) =
     | A.Ref(x)  -> i32_t
       (*TODO*)
     | A.RType(x) -> match x with 
-                    | Foo -> struct_foo_t
-                    | Int -> i32_t
-                    | Bool -> i1_t
+                    | A.Foo -> struct_foo_t
+                    | A.Int -> i32_t
+                    | A.Bool -> i1_t
+                    | A.Char -> i8_t
+                    | A.Float -> float_t
+                    | A.String -> i8_t
+
   in
 
   (* Create a map of global variables after creating each *)
@@ -105,7 +110,7 @@ let translate (globals, functions) =
        * resulting registers to our map *)
       and add_local m (t, n) =
         let local_var = L.build_alloca (ltype_of_typ t) n builder
-        in let _ = if t = A.RType(Foo) then 
+        in let _ = if t = A.RType(A.Foo) then 
                             (ignore (L.build_call initFoo [| local_var |] "" builder);
                             L.build_call incFoo [| local_var |] "" builder)
                 else local_var
@@ -127,6 +132,9 @@ let translate (globals, functions) =
     let rec build_expr builder ((_, e) : sexpr) = match e with
         SIntLit i  -> L.const_int i32_t i
       | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
+      | SFloatLit f -> L.const_float float_t f
+      (*|SCharLit c -> L... c*)
+      (*| SStrLit s -> s*)
       | SVar s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = build_expr builder e in
         ignore(L.build_store e' (lookup s) builder); e'
@@ -136,11 +144,28 @@ let translate (globals, functions) =
         (match op with
            A.Add     -> L.build_add
          | A.Sub     -> L.build_sub
-         | A.And     -> L.build_and
-         | A.Or      -> L.build_or
+         | A.Mult    -> L.build_mul
+         | A.Div     -> L.build_sdiv
+         | A.FAdd    -> L.build_fadd
+         | A.FSub    -> L.build_fsub
+         | A.FMult   -> L.build_fmul
+         | A.FDiv    -> L.build_fdiv
          | A.Eq      -> L.build_icmp L.Icmp.Eq
          | A.Neq     -> L.build_icmp L.Icmp.Ne
          | A.Lt      -> L.build_icmp L.Icmp.Slt
+         | A.Gt      -> L.build_icmp L.Icmp.Sgt
+         | A.Leq     -> L.build_icmp L.Icmp.Sle
+         | A.Geq     -> L.build_icmp L.Icmp.Sge
+         | A.FEq     -> L.build_fcmp L.Fcmp.Oeq
+         | A.FNeq    -> L.build_fcmp L.Fcmp.One
+         | A.FLt     -> L.build_fcmp L.Fcmp.Olt
+         | A.FGt     -> L.build_fcmp L.Fcmp.Ogt
+         | A.FLeq    -> L.build_fcmp L.Fcmp.Ole
+         | A.FGeq    -> L.build_fcmp L.Fcmp.Oge
+         | A.And     -> L.build_and
+         | A.Or      -> L.build_or
+         | A.Not     -> L.build_xor
+
         ) e1' e2' "tmp" builder
       | SCall ("print", [e]) ->
         L.build_call printf_func [| int_format_str ; (build_expr builder e) |]
@@ -199,6 +224,24 @@ let translate (globals, functions) =
         ignore(L.build_cond_br bool_val body_bb end_bb while_builder);
         L.builder_at_end context end_bb
 
+     | SFor (f::s::t::l, body) ->
+        let for_bb = L.append_block context "for" the_function in
+        let build_br_for = L.build_br for_bb in (* partial function *)
+        ignore (build_br_for builder);
+        let for_builder = L.builder_at_end context for_bb in
+        let bool_val = build_expr for_builder (s) in
+
+        let init_bb = L.append_block context "for_init" the_function in
+        add_terminal (ignore (build_expr (L.builder_at_end context init_bb) f); L.builder_at_end context init_bb ) build_br_for; 
+        let body_bb = L.append_block context "for_body" the_function in
+        add_terminal (build_stmt (L.builder_at_end context body_bb) body) build_br_for;
+        let update_bb = L.append_block context "for_update" the_function in
+        add_terminal (ignore (build_expr (L.builder_at_end context update_bb) t); L.builder_at_end context update_bb ) build_br_for;
+
+        let end_bb = L.append_block context "for_end" the_function in
+
+        ignore(L.build_cond_br bool_val body_bb end_bb for_builder);
+        L.builder_at_end context end_bb
     in
     (* Build the code for each statement in the function *)
     let func_builder = build_stmt builder (SBlock fdecl.sbody) in

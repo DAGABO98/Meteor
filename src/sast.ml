@@ -9,13 +9,10 @@ and sx =
   | SBoolLit of bool
   | SCharLit of char
   | SStrLit of string
-  | SNew of sexpr
   | SVar of string
   | SBinop of sexpr * op * sexpr
   | SAssign of string * sexpr
-  | SPrint of string
   | SCall of string * sexpr list
-  | SLet of string * sexpr
 
 type sstmt =
     SBlock of sstmt list
@@ -61,6 +58,8 @@ let rec string_of_sstmt = function
   | SIf(e, s1, s2) ->  "if (" ^ string_of_sexpr e ^ ")\n" ^
                        string_of_sstmt s1 ^ "else\n" ^ string_of_sstmt s2
   | SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
+  | SFor(es, s) ->"for (" ^ String.concat "" (List.map string_of_sexpr es) ^ ") " ^ string_of_sstmt s
+
 
 let string_of_sfdecl fdecl =
   string_of_typ fdecl.srtyp ^ " " ^

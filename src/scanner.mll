@@ -55,13 +55,10 @@ rule token = parse
         | '-'           { MINUS }
         | '*'           { TIMES }
         | '/'           { DIVIDE }
-        | "**"          { POWER }
-        | '%'           { MOD }
         | "+."          { FPLUS }
         | "-."          { FMINUS }
         | "*."          { FTIMES }
         | "/."          { FDIVIDE }
-        | "**."         { FPOWER }
         (* BOOLEAN OPERATORS *)
         | '!'           { NOT }
         | "&&"          { AND }

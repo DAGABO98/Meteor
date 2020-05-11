@@ -8,8 +8,8 @@ type typ =
     | RType of b_type
 
 type op = 
-      Add | Sub | Mult | Div | Pow | Mod
-    | FAdd | FSub | FMult | FDiv | FPow
+      Add | Sub | Mult | Div
+    | FAdd | FSub | FMult | FDiv
     | And | Or | Not
     | Eq | FEq | Neq | FNeq | Lt | FLt | Gt | FGt
     | Leq | FLeq | Geq | FGeq 
@@ -19,10 +19,8 @@ type expr =
     | IntLit of int | FloatLit of float | BoolLit of bool
     | CharLit of char | StrLit of string
     | Var of string
-    | New of expr
     | Binop of expr * op * expr
     | Call of string * expr list
-    | Let of string * expr * expr
     | Assign of string * expr
 
 type stmt =
@@ -53,13 +51,10 @@ let string_of_op = function
   | Sub -> "-"
   | Mult -> "*"
   | Div -> "/"
-  | Pow -> "**"
-  | Mod -> "%"  
   | FAdd -> ".+"
   | FSub -> ".-"
   | FMult -> ".*"
   | FDiv -> "./"
-  | FPow -> ".**"
   | Eq -> "=="
   | Neq -> "!="
   | Lt -> "<"
@@ -84,7 +79,6 @@ let rec string_of_expr = function
   | CharLit(c) -> String.make 1 c
   | StrLit(s) -> s
   | Var(s) -> s
-  | New(s) -> "new " ^ string_of_expr s
   | Binop(e1, o, e2) ->
     string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e

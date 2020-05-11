@@ -107,8 +107,8 @@ let check (globals, functions) =
         if t1 = t2 then
           (* Determine expression type based on operator and operand types *)
           let t = match op with
-              Add | Sub | Mult | Div | Pow | Mod when t1 = RType(Int) -> RType(Int)
-            | FAdd | FSub | FMult | FDiv | FPow when t1 = RType(Float) -> RType(Float)
+              Add | Sub | Mult | Div when t1 = RType(Int) -> RType(Int)
+            | FAdd | FSub | FMult | FDiv when t1 = RType(Float) -> RType(Float)
             | Eq | Neq when t1 = RType(Int) -> RType(Bool)
             | FEq | FNeq when t1 = RType(Float) -> RType(Bool)
             | Lt | Gt | Leq | Geq when t1 = RType(Int) -> RType(Bool)
@@ -155,12 +155,15 @@ let check (globals, functions) =
         SIf(check_bool_expr e, check_stmt st1, check_stmt st2)
       | While(e, st) ->
         SWhile(check_bool_expr e, check_stmt st)
+      | For(est::ndt::tdt::_, st) -> 
+        SFor([check_expr (est); check_bool_expr (ndt); check_expr (tdt)], check_stmt st)
       | Return e ->
         let (t, e') = check_expr e in
         if t = func.rtyp then SReturn (t, e')
         else raise (
             Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                      string_of_typ func.rtyp ^ " in " ^ string_of_expr e))
+      | _ -> raise (Failure ("Block is incomplete or in the worng format"))
     in (* body of check_func *)
     { srtyp = func.rtyp;
       sfname = func.fname;
