@@ -1,14 +1,26 @@
 #include <stdbool.h>
-struct Mut {
-        void *ptr;
-        int type;
+struct MutInt {
+        int *ptr;
 };
 
-void initMut(struct Mut *mut, int type);
-void assignMutInt(struct Mut *mut, int value);
-void assignMutFloat(struct Mut *mut, float value);
-void assignMutBool(struct Mut *mut, bool value);
-int readMutInt(struct Mut *mut);
-float readMutFloat(struct Mut *mut);
-bool readMutBool(struct Mut *mut);
-void destroyMut(struct Mut *mut);
+struct MutFloat {
+        float *ptr;
+};
+
+struct MutBool {
+        bool *ptr;
+};
+
+void initMutInt(struct MutInt *mut);
+void initMutFloat(struct MutInt *mut);
+void initMutBool(struct MutBool *mut);
+void assignMutInt(struct MutInt *mut, int value);
+void assignMutFloat(struct MutFloat *mut, float value);
+void assignMutBool(struct MutBool *mut, bool value);
+int readMutInt(struct MutInt *mut);
+float readMutFloat(struct MutFloat *mut);
+bool readMutBool(struct MutBool *mut);
+void destroyMutInt(struct MutInt *mut);
+void destroyMutFloat(struct MutFloat *mut);
+void destroyMutBool(struct MutBool *mut);
+

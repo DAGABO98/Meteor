@@ -71,8 +71,13 @@ let check (globals, functions) =
 
     (* Raise an exception if the given rvalue type cannot be assigned to
        the given lvalue type *)
-  let check_assign lvaluet rvaluet err =
-      if (get_b_type lvaluet) = (get_b_type rvaluet) then lvaluet else raise (Failure err)
+  let check_assign lvaluet rvaluet err = match lvaluet with
+        | Ref(x) -> (match rvaluet with
+                    | Ref(x) -> if (get_b_type lvaluet) = (get_b_type rvaluet) then lvaluet else raise (Failure err)
+                    | Mut (x) ->  if (get_b_type lvaluet) = (get_b_type rvaluet) then lvaluet else raise (Failure err)
+                    | _ -> raise (Failure err))
+        | _ ->  if (get_b_type lvaluet) = (get_b_type rvaluet) then lvaluet else raise (Failure err)
+
   in
 
     (* Build local symbol table of variables for this function *)

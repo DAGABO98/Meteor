@@ -34,13 +34,14 @@ let translate (globals, functions) =
   and float_t    = L.float_type  context in
 
   (* Declare struct Foo *)
-    
+    (*
   let struct_ref_t : L.lltype = 
       L.named_struct_type context "Ref" in
 
   let _ = 
       L.struct_set_body struct_ref_t
       [| |]
+      *)
   let struct_foo_t : L.lltype = 
       L.named_struct_type context "Foo" in
 

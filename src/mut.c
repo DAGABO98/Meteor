@@ -3,42 +3,48 @@
 #include <stdlib.h>
 #include <string.h>
 
-void initMut(struct Mut *mut, int type){
-    if(type == 0){
-        mut->ptr = malloc(sizeof(int));
-    }
-    else if(type == 1){
-        mut->ptr = malloc(sizeof(float));
-    }
-    else {
-        mut->ptr = malloc(sizeof(bool));
-    }
-    mut->type = type;
+void initMutInt(struct MutInt *mut){
+    mut->ptr = malloc(sizeof(int));
 }
 
-void assignMutInt(struct Mut *mut, int value){
+void initMutFloat(struct MutInt *mut){
+    mut->ptr = malloc(sizeof(float));
+}
+
+void initMutBool(struct MutBool *mut){
+    mut->ptr = malloc(sizeof(bool));
+}
+
+void assignMutInt(struct MutInt *mut, int value){
     memcpy(mut->ptr, &value, sizeof(value));
 }                           
-void assignMutFloat(struct Mut *mut, float value){
+void assignMutFloat(struct MutFloat *mut, float value){
     memcpy(mut->ptr, &value, sizeof(value));
 }                               
-void assignMutBool(struct Mut *mut, bool value){
+void assignMutBool(struct MutBool *mut, bool value){
     memcpy(mut->ptr, &value, sizeof(value));
 } 
 
-int readMutInt(struct Mut *mut){
+int readMutInt(struct MutInt *mut){
     return *((int *) mut->ptr);
 }
 
-float readMutFloat(struct Mut *mut){
+float readMutFloat(struct MutFloat *mut){
     return *((float *) mut->ptr);
 }
 
-bool readMutBool(struct Mut *mut){
+bool readMutBool(struct MutBool *mut){
     return *((bool *) mut->ptr);
 }
 
-void destroyMut(struct Mut *mut){
+void destroyMutInt(struct MutInt *mut){
     free(mut->ptr);
-    mut->type = -1;
+}
+
+void destroyMutFloat(struct MutFloat *mut){
+    free(mut->ptr);
+}
+
+void destroyMutBool(struct MutBool *mut){
+    free(mut->ptr);
 }
