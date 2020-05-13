@@ -49,7 +49,7 @@ rule token = parse
         (* CHARACTER LITERALS *)
         | "'"( _ as ch)"'"  { CHARLIT(ch) }
         (* STRING LITERALS *)
-        (*| '"'( _ as str)'"' { STRLIT(str) }*)
+        | '"' ([^ '"']* as str)'"' { STRLIT(str) }
         (* NUMBER OPERATORS *)
         | '+'           { PLUS }
         | '-'           { MINUS }
@@ -63,6 +63,7 @@ rule token = parse
         | '!'           { NOT }
         | "&&"          { AND }
         | "||"          { OR }
+        (* COMPARISON OPERATORS *)
         | "=="          { EQ }
         | "==."         { FEQ }
         | "!="          { NEQ }

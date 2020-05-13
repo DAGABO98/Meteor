@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS= -g -Wall
 LDFLAGS= -g
 
-default: compiler.native libfoo.a
+default: compiler.native libfoo.a libref.a libmut.a
 
 compiler.native: compiler.ml scanner.mll parser.mly irgen.ml semant.ml ast.ml sast.ml
 	ocamlbuild -use-ocamlfind -pkgs llvm compiler.native
@@ -15,6 +15,18 @@ libfoo.a: foo.o
 	ranlib libfoo.a
 
 foo.o: foo.h foo.c
+
+libref.a: ref.o
+	ar -crs libref.a ref.o
+	ranlib libref.a
+
+ref.o: ref.h ref.c
+
+libmut.a: mut.o
+	ar -crs libmut.a mut.o
+	ranlib libmut.a
+
+mut.o: mut.h mut.c
 
 .PHONY: clean
 clean:

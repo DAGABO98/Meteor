@@ -1,13 +1,15 @@
-struct Ref {
-        void *ptr;
-        int type;
-};
+#include "ref.h"
+#include <stdlib.h>
+#include <stdio.h>
 
-void initRef(struct Ref *ref, void *ptr, int type){
-    ref->ptr = ptr;
+void initRef(struct Ref *ref, int type){
+    ref->ptr = NULL;
     ref->type = type;
 }
 
+void assignRef(struct Ref *ref, struct Mut *mut){
+    ref->ptr = mut->ptr;
+}
 float readRefFloat(struct Ref *ref){
     return *((float *)ref->ptr);
 }
@@ -15,6 +17,6 @@ float readRefFloat(struct Ref *ref){
 int readRefInt(struct Ref *ref){
     return *((int *)ref->ptr);
 }
-char *readRefStr(struct Ref *ref){
-    return (char *)ref->ptr;
+bool readRefBool(struct Ref *ref){
+    return *((bool *)ref->ptr);
 }

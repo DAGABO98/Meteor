@@ -34,6 +34,6 @@ let () =
 		if (command "llc -relocation-model=pic llvm.out" != 0)
 		then raise (Failure "llc: non-zero exit code")
 		else if 
-			((command "gcc llvm.out.s -L./ -lfoo -o a.out" )!= 0)
+			((command "gcc llvm.out.s -L./ -lfoo -lref -lmut -o a.out" )!= 0)
 		then raise (Failure "gcc: non-zero exit code")
 		else ()   
