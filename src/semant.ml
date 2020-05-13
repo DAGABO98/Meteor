@@ -63,11 +63,17 @@ let check (globals, functions) =
     check_binds "formal" func.formals;
     check_binds "local" func.locals;
 
+  let get_b_type valuet = match valuet with
+        | Mut(x) -> x
+        | Ref(x) -> x
+        | RType(x) -> x
+  in
+
     (* Raise an exception if the given rvalue type cannot be assigned to
        the given lvalue type *)
-    let check_assign lvaluet rvaluet err =
-      if lvaluet = rvaluet then lvaluet else raise (Failure err)
-    in
+  let check_assign lvaluet rvaluet err =
+      if (get_b_type lvaluet) = (get_b_type rvaluet) then lvaluet else raise (Failure err)
+  in
 
     (* Build local symbol table of variables for this function *)
     let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
@@ -104,16 +110,16 @@ let check (globals, functions) =
                   string_of_typ t2 ^ " in " ^ string_of_expr e
         in
         (* All binary operators require operands of the same type*)
-        if t1 = t2 then
+        if (get_b_type t1) = (get_b_type t2) then
           (* Determine expression type based on operator and operand types *)
           let t = match op with
-              Add | Sub | Mult | Div when t1 = RType(Int) -> RType(Int)
-            | FAdd | FSub | FMult | FDiv when t1 = RType(Float) -> RType(Float)
-            | Eq | Neq when t1 = RType(Int) -> RType(Bool)
-            | FEq | FNeq when t1 = RType(Float) -> RType(Bool)
-            | Lt | Gt | Leq | Geq when t1 = RType(Int) -> RType(Bool)
-            | FLt | FGt | FLeq | FGeq when t1 = RType(Float) -> RType(Bool)
-            | And | Or | Not when t1 = RType(Bool) -> RType(Bool)
+              Add | Sub | Mult | Div when get_b_type t1 = Int -> RType(Int)
+            | FAdd | FSub | FMult | FDiv when get_b_type t1 = Float -> RType(Float)
+            | Eq | Neq when get_b_type t1 = Int -> RType(Bool)
+            | FEq | FNeq when get_b_type t1 = Float -> RType(Bool)
+            | Lt | Gt | Leq | Geq when get_b_type t1 = Int -> RType(Bool)
+            | FLt | FGt | FLeq | FGeq when get_b_type t1 = Float -> RType(Bool)
+            | And | Or | Not when get_b_type t1 = Bool -> RType(Bool)
             | _ -> raise (Failure err)
           in
           (t, SBinop((t1, e1'), op, (t2, e2')))
@@ -138,6 +144,8 @@ let check (globals, functions) =
       let (t, e') = check_expr e in
       match t with
       | RType(Bool) -> (t, e')
+      | Mut(Bool) -> (t, e')
+      | Ref(Bool) -> (t, e')
       |  _ -> raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
     in
 
