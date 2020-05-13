@@ -97,22 +97,36 @@ let rec string_of_stmt = function
                        ^ string_of_stmt s
 
 let string_of_typ = function
-    Ref(x) -> "&"
-  | Mut(x) -> "mut"
-  | RType(x) -> match x with
+    Ref(x) ->  (match x with
+            | Int -> "&int"
+            | Char -> "&char"
+            | Float -> "&float"
+            | Bool -> "&bool"
+            | String -> "&string"
+            | Foo -> "&foo")
+  | Mut(x) ->  (match x with
+            | Int -> "mut &int"
+            | Char -> "mut &char"
+            | Float -> "mut &float"
+            | Bool -> "mut &bool"
+            | String -> "mut &string"
+            | Foo -> "mut &foo")
+  | RType(x) -> (match x with
             | Int -> "int"
             | Char -> "char"
             | Float -> "float"
             | Bool -> "bool"
             | String -> "string"
-            | Foo -> "foo"
+            | Foo -> "foo")
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl (t, id) = "let " ^ id ^ " -> " ^ string_of_typ t ^ ";\n"
+
+let string_of_vinst (t, id) = id ^ " -> " ^ string_of_typ t
 
 let string_of_fdecl fdecl =
-  string_of_typ fdecl.rtyp ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
-  ")\n{\n" ^
+  "func " ^ fdecl.fname ^ 
+  "(" ^ String.concat ", " ((List.map string_of_vinst fdecl.formals)) 
+  ^ ") -> " ^ string_of_typ fdecl.rtyp ^ " {\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"

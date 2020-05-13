@@ -59,9 +59,9 @@ vinst:
   VAR ARROW typ { ($3, $1) }
 
 typ:
-    | b_typ           { RType($1) }
     | MUT REF b_typ   { Mut($3) }
     | REF b_typ       { Ref($2) }
+    | b_typ           { RType($1) }
 
 b_typ:
     | INTTYPE       { Int }

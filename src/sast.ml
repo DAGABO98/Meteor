@@ -62,9 +62,9 @@ let rec string_of_sstmt = function
 
 
 let string_of_sfdecl fdecl =
-  string_of_typ fdecl.srtyp ^ " " ^
-  fdecl.sfname ^ "(" ^ String.concat ", " (List.map snd fdecl.sformals) ^
-  ")\n{\n" ^
+  "func " ^ fdecl.sfname ^ 
+  "(" ^ String.concat ", " (List.map string_of_vinst fdecl.sformals) ^
+  ") -> " ^ string_of_typ fdecl.srtyp ^ "{\n" ^
   String.concat "" (List.map string_of_vdecl fdecl.slocals) ^
   String.concat "" (List.map string_of_sstmt fdecl.sbody) ^
   "}\n"
