@@ -33,15 +33,45 @@ let translate (globals, functions) =
   and void_t     = L.void_type   context
   and float_t    = L.float_type  context in
 
-  (* Declare struct Foo *)
-    (*
-  let struct_ref_t : L.lltype = 
-      L.named_struct_type context "Ref" in
+  (* Declare C structs *)
+  
+  (*Mut structs*)
+  let struct_mut_int_t : L.lltype = 
+      L.named_struct_type context "MutInt" in
+
+  let struct_mut_float_t : L.lltype = 
+      L.named_struct_type context "MutFloat" in
+
+  let struct_mut_bool_t : L.lltype = 
+      L.named_struct_type context "MutBool" in
 
   let _ = 
-      L.struct_set_body struct_ref_t
-      [| |]
-      *)
+      L.struct_set_body struct_mut_int_t
+      [| L.pointer_type i32_t |] false;
+      L.struct_set_body struct_mut_float_t
+      [| L.pointer_type float_t |] false;
+      L.struct_set_body struct_mut_bool_t
+      [| L.pointer_type i1_t |] false in
+
+  (* Ref structs *)
+  let struct_ref_int_t : L.lltype = 
+      L.named_struct_type context "RefInt" in
+
+  let struct_ref_float_t : L.lltype = 
+      L.named_struct_type context "RefFloat" in
+
+  let struct_ref_bool_t : L.lltype = 
+      L.named_struct_type context "RefBool" in
+
+  let _ = 
+      L.struct_set_body struct_ref_int_t
+      [| L.pointer_type i32_t |] false;
+      L.struct_set_body struct_ref_float_t
+      [| L.pointer_type float_t |] false;
+      L.struct_set_body struct_ref_bool_t
+      [| L.pointer_type i1_t |] false in
+   
+  (* Foo struct *)
   let struct_foo_t : L.lltype = 
       L.named_struct_type context "Foo" in
 
@@ -51,17 +81,23 @@ let translate (globals, functions) =
 
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
-      A.Mut(x)   -> i32_t
-      (*TODO*)
-    | A.Ref(x)  -> i32_t
-      (*TODO*)
-    | A.RType(x) -> match x with 
+      A.Mut(x)   -> (match x with
+                    | A.Int -> struct_mut_int_t
+                    | A.Bool -> struct_mut_bool_t
+                    | A.Float -> struct_mut_float_t
+                    | _ -> i32_t )
+    | A.Ref(x)  -> (match x with
+                    | A.Int -> struct_ref_int_t
+                    | A.Bool -> struct_ref_bool_t
+                    | A.Float -> struct_ref_float_t 
+                    | _ -> i32_t )
+    | A.RType(x) -> (match x with 
                     | A.Foo -> struct_foo_t
                     | A.Int -> i32_t
                     | A.Bool -> i1_t
                     | A.Char -> i8_t
                     | A.Float -> float_t
-                    | A.String -> i8_t
+                    | A.String -> i8_t )
 
   in
 
@@ -79,7 +115,142 @@ let translate (globals, functions) =
 
   (* Declare each C function*)
 
-  let incFoo_t : L.lltype = L.function_type (L.void_type context)
+  (* Mut functions*)
+    (* Init *)
+  let initMutInt_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_int_t |] in
+
+  let initMutInt : L.llvalue = L.declare_function "initMutInt" initMutInt_t the_module in
+
+  let initMutFloat_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_float_t |] in
+
+  let initMutFloat : L.llvalue = L.declare_function "initMutFloat" initMutFloat_t the_module in
+
+  let initMutBool_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_bool_t |] in
+
+  let initMutBool : L.llvalue = L.declare_function "initMutBool" initMutBool_t the_module in
+
+  (* Assign *)
+  let assignMutInt_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_int_t; i32_t |] in
+
+  let assignMutInt : L.llvalue = L.declare_function "assignMutInt" assignMutInt_t the_module in
+
+  let assignMutFloat_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_float_t; float_t |] in
+
+  let assignMutFloat : L.llvalue = L.declare_function "assignMutFloat" assignMutFloat_t the_module in
+
+  let assignMutBool_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_bool_t; i1_t |] in
+
+  let assignMutBool : L.llvalue = L.declare_function "assignMutBool" assignMutInt_t the_module in
+
+    (* Read *)
+  let readMutInt_t : L.lltype = L.function_type (i32_t)
+    [| L.pointer_type struct_mut_int_t |] in 
+
+  let readMutInt : L.llvalue = L.declare_function "readMutInt" readMutInt_t the_module in 
+
+  let readMutFloat_t : L.lltype = L.function_type (float_t)
+    [| L.pointer_type struct_mut_float_t |] in 
+
+  let readMutFloat : L.llvalue = L.declare_function "readMutFloat" readMutFloat_t the_module in 
+
+  let readMutBool_t : L.lltype = L.function_type (i1_t)
+    [| L.pointer_type struct_mut_bool_t |] in 
+
+  let readMutBool : L.llvalue = L.declare_function "readMutBool" readMutBool_t the_module in 
+
+  (* Destroy *)
+  let destroyMutInt_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_int_t |] in
+
+  let destroyMutInt : L.llvalue = L.declare_function "destroyMutInt" destroyMutInt_t the_module in
+
+  let destroyMutFloat_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_float_t |] in
+
+  let destroyMutFloat : L.llvalue = L.declare_function "destroyMutFloat" destroyMutFloat_t the_module in
+
+  let destroyMutBool_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_mut_bool_t |] in
+
+  let destroyMutBool : L.llvalue = L.declare_function "destroyMutBool" destroyMutBool_t the_module in
+
+  (* Ref functions*)
+    (* Init *)
+  let initRefInt_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_int_t |] in
+
+  let initRefInt : L.llvalue = L.declare_function "initRefInt" initRefInt_t the_module in
+
+  let initRefFloat_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_float_t |] in
+
+  let initRefFloat : L.llvalue = L.declare_function "initRefFloat" initRefFloat_t the_module in
+
+  let initRefBool_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_bool_t |] in
+
+  let initRefBool : L.llvalue = L.declare_function "initRefBool" initRefBool_t the_module in
+
+  (* Assign *)
+  let assignRefIntMut_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_int_t; L.pointer_type struct_mut_int_t |] in
+
+  let assignRefIntMut : L.llvalue = L.declare_function "assignRefIntMut" assignRefIntMut_t the_module in
+
+  let assignRefIntRef_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_int_t; L.pointer_type struct_ref_int_t |] in
+
+  
+  let assignRefIntRef : L.llvalue = L.declare_function "assignRefIntRef" assignRefIntRef_t the_module in
+  
+  let assignRefFloatMut_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_float_t; L.pointer_type struct_mut_float_t |] in
+
+  
+  let assignRefFloatMut : L.llvalue = L.declare_function "assignRefFloatMut" assignRefFloatMut_t the_module in
+  
+  let assignRefFloatRef_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_float_t; L.pointer_type struct_ref_float_t |] in
+
+  
+  let assignRefFloatRef : L.llvalue = L.declare_function "assignRefFloatRef" assignRefFloatRef_t the_module in
+  
+  let assignRefBoolMut_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_bool_t; L.pointer_type struct_mut_bool_t |] in
+
+  
+  let assignRefBoolMut : L.llvalue = L.declare_function "assignRefBoolMut" assignRefBoolMut_t the_module in
+  
+  let assignRefBoolRef_t : L.lltype = L.function_type (void_t)
+    [| L.pointer_type struct_ref_bool_t; L.pointer_type struct_ref_bool_t |] in
+
+  
+  let assignRefBoolRef : L.llvalue = L.declare_function "assignRefBoolRef" assignRefBoolRef_t the_module in
+
+    (* Read *)
+  let readRefInt_t : L.lltype = L.function_type (i32_t)
+    [| L.pointer_type struct_ref_int_t |] in 
+
+  let readRefInt : L.llvalue = L.declare_function "readRefInt" readRefInt_t the_module in 
+
+  let readRefFloat_t : L.lltype = L.function_type (float_t)
+    [| L.pointer_type struct_ref_float_t |] in 
+
+  let readRefFloat : L.llvalue = L.declare_function "readRefFloat" readRefFloat_t the_module in 
+
+  let readRefBool_t : L.lltype = L.function_type (i1_t)
+    [| L.pointer_type struct_ref_bool_t |] in 
+
+  let readRefBool : L.llvalue = L.declare_function "readRefBool" readRefBool_t the_module in 
+
+(* Foo functions *)
+  let incFoo_t : L.lltype = L.function_type (void_t)
     [| L.pointer_type struct_foo_t |] in
 
   let incFoo : L.llvalue = L.declare_function "incFoo" incFoo_t the_module in
@@ -118,10 +289,18 @@ let translate (globals, functions) =
        * resulting registers to our map *)
       and add_local m (t, n) =
         let local_var = L.build_alloca (ltype_of_typ t) n builder
-        in let _ = if t = A.RType(A.Foo) then 
-                            (ignore (L.build_call initFoo [| local_var |] "" builder);
-                            L.build_call incFoo [| local_var |] "" builder)
-                else local_var
+        in let _ = match t with 
+                    | A.Mut(x) -> (match x with 
+                                    | A.Int -> (L.build_call initMutInt [| local_var |] "" builder)
+                                    | A.Float -> (L.build_call initMutFloat [| local_var |] "" builder)
+                                    | A.Bool -> (L.build_call initMutBool [| local_var |] "" builder)
+                                    )
+                    | A.Ref(x) -> (match x with
+                                    | A.Int -> (L.build_call initRefInt [| local_var |] "" builder)
+                                    | A.Float -> (L.build_call initRefFloat [| local_var |] "" builder)
+                                    | A.Bool -> (L.build_call initRefBool [| local_var |] "" builder) 
+                                    )
+                    | _ -> local_var
         in StringMap.add n local_var m
       in
 
