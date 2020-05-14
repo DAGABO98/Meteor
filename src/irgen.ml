@@ -350,10 +350,13 @@ let translate (globals, functions) =
     let check_if_mut_local ((typ, e) : sexpr) = match e with
       | SVar s -> (match typ with 
                     | A.Mut(A.Int) -> ignore(L.build_call destroyMutInt [| (lookup s) |] "" builder);
+                                      ignore(mut_local_vars = StringMap.remove s mut_local_vars);
                                       local_vars = StringMap.remove s local_vars
                     | A.Mut(A.Float) -> ignore(L.build_call destroyMutFloat [| (lookup s) |] "" builder);
+                                      ignore(mut_local_vars = StringMap.remove s mut_local_vars);
                                       local_vars = StringMap.remove s local_vars
                     | A.Mut(A.Bool) -> ignore(L.build_call destroyMutBool [| (lookup s) |] "" builder);
+                                      ignore(mut_local_vars = StringMap.remove s mut_local_vars);
                                       local_vars = StringMap.remove s local_vars
                     | _ -> local_vars = local_vars)
       | _ -> (local_vars = local_vars)
@@ -464,12 +467,12 @@ let translate (globals, functions) =
       | SAssign (s, e) -> let e' = (match (fst e) with
                                     | A.Mut(x) when typ = A.Ref(x) -> 
                                         (match (snd e) with 
-                                        | SVar y -> L.build_load (lookup y) y builder
-                                        | _ -> L.build_load (lookup s) s builder )
+                                        | SVar y -> lookup y
+                                        | _ -> lookup s )
                                     | A.Ref(x) when typ = A.Ref(x) ->
                                         (match (snd e) with 
-                                        | SVar y -> L.build_load (lookup y) y builder 
-                                        | _ -> L.build_load (lookup s) s builder )
+                                        | SVar y -> lookup y 
+                                        | _ -> lookup s )
                                     | _ -> build_expr builder e) in
                             ignore (match typ with 
                             | A.Mut(A.Int) -> (L.build_call assignMutInt [| (lookup s); e' |] "" builder)                                                                               
