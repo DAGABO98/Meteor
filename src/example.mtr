@@ -4,14 +4,27 @@ func add(number_1 -> int, number_2 -> int) -> int {
 }
 
 func main() -> int {
-  let number_1 -> int;
-  let number_2 -> int;
-  let result -> int;
+  #let number_1 -> int;
+  #let number_2 -> int;
+  #let result -> int;
 
   number_1 = 2;
   number_2 = 3;
   
   result = add(number_1, number_2);
   print(result);
+
+  number_3 = add(number_1, number_2) + 4;
+  print(number_3);
+
+  hello = true;
+
+  if (hello) {
+
+    print(00000001);
+  } else {
+    print(10000000);
+  }
+
   return 0;
 }
