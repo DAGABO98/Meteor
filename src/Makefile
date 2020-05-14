@@ -4,7 +4,7 @@ LDFLAGS= -g
 
 default: compiler.native libfoo.a libref.a libmut.a
 
-compiler.native: compiler.ml scanner.mll parser.mly irgen.ml semant.ml ast.ml sast.ml
+compiler.native: compiler.ml scanner.mll parser.mly irgen.ml semant.ml ast.ml sast.ml type_inference.ml
 	ocamlbuild -use-ocamlfind -pkgs llvm compiler.native
 
 parser.native: parser.mly ast.mli scanner.mll
