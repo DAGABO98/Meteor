@@ -1,5 +1,4 @@
 open Ast
-open Printf
 
 module StringMap = Map.Make(String)
 
@@ -21,8 +20,7 @@ let infer (globals, functions) =
 
       (* Add function name to symbol table *)
       let add_func map fd =
-        let built_in_err = "function " ^ fd.fname ^ " may not be defined"
-        and dup_err = "duplicate function " ^ fd.fname
+        let dup_err = "duplicate function " ^ fd.fname
         and make_err er = raise (Failure er)
         and n = fd.fname (* Name of the function *)
         in match fd with (* No duplicate functions or redefinitions of built-ins *)
@@ -65,25 +63,20 @@ let infer (globals, functions) =
         | Assign(var, e) as ex ->
             (try 
                 ignore (type_of_identifier var);
-                 Printf.printf "%s\n" "type already declared returning empty";
                 (ex, [])
 
-            with Failure "Not Found" -> 
-                 Printf.printf "%s\n" "type not found inferring...";
+            with Failure _ -> 
               let inferred_type = get_type e
               in
                 if (List.mem (inferred_type, var) new_ds) then ex, []
                 else ex, [(inferred_type, var)])
 
         | Binop(e1, op, e2) -> 
-                 Printf.printf "%s\n" "Bin op...";
 
                 let exp1, new_locals1 = check_expr new_ds e1
                 in
-                 Printf.printf "expr: %s returned new_locals1: %s\n" (string_of_expr exp1) (String.concat "" (List.map string_of_vdecl new_locals1));
                                 let exp2, new_locals2 = check_expr (new_ds @ new_locals1) e2
                                 in
-                 Printf.printf "expr2: %s returned new_locals2: %s\n" (string_of_expr exp1) (String.concat "" (List.map string_of_vdecl new_locals2));
                                 (Binop(exp1, op, exp2), new_ds @ new_locals1 @ new_locals2)
 
         | Call(fname, args) as call -> (call, [])
@@ -94,12 +87,9 @@ let infer (globals, functions) =
         (* Flatten blocks *)
         | (Block sl :: sl', new_ds)  -> check_stmt_list (sl @ sl', new_ds)
         | (s :: sl, new_ds) -> 
-                Printf.printf "start with s: %s and new locals: %s\n" (String.concat "" (List.map string_of_stmt [s])) (String.concat "" (List.map string_of_vdecl new_ds));
                                 let s1, new_locals = check_stmt new_ds s
                                in
-                                Printf.printf "got new locals: %s\n" (String.concat "" (List.map string_of_vdecl new_locals));
                                 
-                                Printf.printf "and new_ds: %s\n" (String.concat "" (List.map string_of_vdecl new_ds));
                                let s2, new_locals2 = (check_stmt_list (sl, new_ds @ new_locals))
                                in
                                (s1 :: s2, new_locals2)
@@ -110,7 +100,6 @@ let infer (globals, functions) =
           follows any Return statement.  Nested blocks are flattened. *)
        (* TODO *)
          Block sl as block -> 
-             Printf.printf "going into block:\n";
              (block, [])
          | Expr e -> let e1, new_locals = check_expr new_ds e
                      in (Expr e1, new_locals)
@@ -118,10 +107,8 @@ let infer (globals, functions) =
          | While(e, st) as whilest -> (whilest, [])
          | For(est::ndt::tdt::_, st) as forst-> (forst, [])
          | Return e -> 
-                Printf.printf "Return: expr %s\n" (string_of_expr e);
                  let e1, rlocals = check_expr new_ds e
                      in 
-                    Printf.printf "check_expr new locals: %s\n" (String.concat "" (List.map string_of_vdecl rlocals));
 
                      (Return e1, rlocals)
          | _ -> raise (Failure ("Block is incomplete or in the worng format"))
@@ -130,8 +117,6 @@ let infer (globals, functions) =
 
     let new_body, new_locals = check_stmt_list (func.body, func.locals)
     in
-    Printf.printf "Returning func: %s\n" (String.concat "" (List.map string_of_stmt new_body)
-        ^ String.concat "" (List.map string_of_vdecl new_locals));
     { rtyp = func.rtyp;
       fname = func.fname;
       formals = func.formals;
