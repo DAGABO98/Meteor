@@ -1,0 +1,29 @@
+# The GCD algorithm in Meteor
+func gpi (a -> mut &float) -> float {
+    let result -> float;
+    let pi -> float;
+    let iter -> float;
+    let flag -> bool;
+
+    iter = 3.0;
+    pi = 4.0;
+    flag = true;
+
+    while (iter <. a ){
+        if ( flag ) {pi = pi +. (4.0 /. iter) ;}
+        else {pi = pi -. (4.0 /. iter);}
+        iter = iter +. 2.0;
+    }
+
+    result = pi;
+    return result;
+}
+
+func main() -> int {
+  let x -> mut &float;
+  let y -> mut &float;
+  let test -> float;
+  y = 14.0;
+  gpi(y);  
+  return 0;
+}
