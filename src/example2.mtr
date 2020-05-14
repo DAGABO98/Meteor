@@ -1,0 +1,18 @@
+# The GCD algorithm in Meteor
+
+func main() -> int {
+  let number_1 -> mut &int;
+  let number_2 -> &int;
+  # let number_3 -> int;
+  let number_4 -> mut &int;
+  let result -> int;
+
+  number_1 = 2;
+  number_2 = number_1;
+  number_3 = 3;
+  number_4 = number_2;
+  
+  result = number_4 + number_2 + number_3;
+  print(result);
+  return 0;
+}
