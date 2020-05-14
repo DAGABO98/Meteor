@@ -1,0 +1,25 @@
+# The GCD algorithm in Meteor
+let a -> int;
+let b -> int;
+
+func gcd (a -> mut &int, b -> mut &int) -> int {
+    let result -> int;
+    while (a != b ){
+        if (b < a) a = a - b;
+        else b = b - a;
+    }
+    result = a;
+    return result;
+}
+
+func main() -> int {
+  let x -> mut &int;
+  let y -> mut &int;
+  a = 18;
+  b = 9;
+  x = 2;
+  y = 14;
+    
+  print(gcd(x,y));
+  return 0;
+}
