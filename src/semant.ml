@@ -96,8 +96,6 @@ let check (globals, functions) =
         IntLit l -> (RType(Int), SIntLit l)
       | FloatLit l -> (RType(Float), SFloatLit l)
       | BoolLit l -> (RType(Bool), SBoolLit l)
-      | CharLit l -> (RType(Char), SCharLit l)
-      | StrLit l -> (RType(String), SStrLit l)
       | Var var -> (type_of_identifier var, SVar var)
       | Assign(var, e) as ex ->
         let lt = type_of_identifier var

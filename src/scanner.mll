@@ -11,15 +11,11 @@ rule token = parse
         | "#"                  { comment lexbuf }
         (* TYPES *)
         | "int"         { INTTYPE }
-        | "char"        { CHARTYPE }
         | "float"       { FLOATTYPE }
         | "bool"        { BOOLTYPE }
-        | "string"      { STRINGTYPE }
-        | "foo"         { FOO }
         | "mut"         { MUT }
         (* KEYWORDS *)
         | "let"         { LET }
-        | "new"         { NEW }
         | "if"          { IF }
         | "else"        { ELSE }
         | "func"        { FUNC }
@@ -39,17 +35,12 @@ rule token = parse
         | "::"          { COMP }
         | "->"          { ARROW }
         | '&'           { REF }
-        | '.'           { DOT }
         (* NUMBER LITERALS *)
         | digit+ as lit              { INTLIT(int_of_string lit) }
         | (digit+ '.' digit+) as lit { FLOATLIT(float_of_string lit) }
         (* BOOLEAN LITERALS *)
         | "true"        { BLIT(true) }
         | "false"       { BLIT(false) }
-        (* CHARACTER LITERALS *)
-        | "'"( _ as ch)"'"  { CHARLIT(ch) }
-        (* STRING LITERALS *)
-        | '"' ([^ '"']* as str)'"' { STRLIT(str) }
         (* NUMBER OPERATORS *)
         | '+'           { PLUS }
         | '-'           { MINUS }

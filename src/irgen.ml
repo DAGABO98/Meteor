@@ -71,33 +71,20 @@ let translate (globals, functions) =
       L.struct_set_body struct_ref_bool_t
       [| L.pointer_type i1_t |] false in
    
-  (* Foo struct *)
-  let struct_foo_t : L.lltype = 
-      L.named_struct_type context "Foo" in
-
-  let _ = 
-      L.struct_set_body struct_foo_t
-      [| i32_t |] false in
-
   (* Return the LLVM type for a MicroC type *)
   let ltype_of_typ = function
       A.Mut(x)   -> (match x with
                     | A.Int -> struct_mut_int_t
                     | A.Bool -> struct_mut_bool_t
-                    | A.Float -> struct_mut_float_t
-                    | _ -> i32_t )
+                    | A.Float -> struct_mut_float_t)
     | A.Ref(x)  -> (match x with
                     | A.Int -> struct_ref_int_t
                     | A.Bool -> struct_ref_bool_t
-                    | A.Float -> struct_ref_float_t 
-                    | _ -> i32_t )
+                    | A.Float -> struct_ref_float_t )
     | A.RType(x) -> (match x with 
-                    | A.Foo -> struct_foo_t
                     | A.Int -> i32_t
                     | A.Bool -> i1_t
-                    | A.Char -> i8_t
-                    | A.Float -> float_t
-                    | A.String -> i8_t )
+                    | A.Float -> float_t )
 
   in
 
@@ -112,7 +99,7 @@ let translate (globals, functions) =
     L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue =
     L.declare_function "printf" printf_t the_module in
-
+  
   (* Declare each C function*)
 
   (* Mut functions*)
@@ -249,14 +236,6 @@ let translate (globals, functions) =
 
   let readRefBool : L.llvalue = L.declare_function "readRefBool" readRefBool_t the_module in 
 
-(* Foo functions *)
-  let incFoo_t : L.lltype = L.function_type (void_t)
-    [| L.pointer_type struct_foo_t |] in
-
-  let incFoo : L.llvalue = L.declare_function "incFoo" incFoo_t the_module in
-
-  let initFoo : L.llvalue = L.declare_function "initFoo" incFoo_t the_module in
-
   (* Define each function (arguments and return type) so we can
      call it even before we've created its body *)
   let function_decls : (L.llvalue * sfunc_def) StringMap.t =
@@ -269,7 +248,7 @@ let translate (globals, functions) =
     List.fold_left function_decl StringMap.empty functions in
 
   (* Fill in the body of the given function *)
-  let build_fnction_body fdecl =
+  let build_function_body fdecl =
     let (the_function, _) = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
@@ -282,16 +261,7 @@ let translate (globals, functions) =
       let add_formal m (t, n) p =
         L.set_value_name n p;
         let local = L.build_alloca (ltype_of_typ t) n builder in
-        ignore ( match t with 
-                | A.Mut(x) -> (match x with 
-                                | A.Int -> ignore(L.build_call initMutInt [| local |] "" builder);
-                                            (L.build_call assignMutInt [| local; p |] "" builder) 
-                                | A.Float -> ignore(L.build_call initMutFloat [| local |] "" builder);
-                                            (L.build_call assignMutFloat [| local; p |] "" builder) 
-                                | A.Bool -> ignore(L.build_call initMutBool [| local |] "" builder);
-                                            (L.build_call assignMutBool [| local; p |] "" builder) 
-                                )
-                | _ -> L.build_store p local builder);
+        ignore (L.build_store p local builder);
         StringMap.add n local m
 
       (* Allocate space for any locally declared variables and add the
@@ -321,51 +291,45 @@ let translate (globals, functions) =
     
 
     (* MUT list *)
-    let mut_local_vars =
-      let add_formal m (t, n) p =
-        match t with 
-            | A.Mut(x) -> StringMap.add n t m
-            | _ -> m
-
-      (* Allocate space for any locally declared variables and add the
-       * resulting registers to our map *)
-      and add_local m (t, n) = match t with 
+    let mut_local_types =
+        let add_local m (t, n) = match t with 
                     | A.Mut(x) -> StringMap.add n t m
                     | _ -> m
 
       in
-
-      let formals = List.fold_left2 add_formal StringMap.empty fdecl.sformals
-          (Array.to_list (L.params the_function)) in
-      List.fold_left add_local formals fdecl.slocals
+      List.fold_left add_local StringMap.empty fdecl.slocals
     in
 
-
+    let mut_local_vars = local_vars
+    
+    in
     (* Return the value for a variable or formal argument.
        Check local names first, then global names *)
     let lookup n = try StringMap.find n local_vars
-      with Not_found -> StringMap.find n global_vars
+      with Not_found -> (try StringMap.find n global_vars
+                        with Not_found -> (raise (Failure "Var not found.\n")))
+    in
+    
+    let lookup_mut n = try StringMap.find n mut_local_vars
+        with Not_found -> (raise (Failure "Mut accessed after ownership has been transferred.\n"))
     in
 
     let check_if_mut_local ((typ, e) : sexpr) = match e with
       | SVar s -> (match typ with 
-                    | A.Mut(A.Int) -> ignore(L.build_call destroyMutInt [| (lookup s) |] "" builder);
-                                      ignore(mut_local_vars = StringMap.remove s mut_local_vars);
+                    | A.Mut(A.Int) -> (*ignore(L.build_call destroyMutInt [| (lookup s) |] "" builder);*)
                                       local_vars = StringMap.remove s local_vars
-                    | A.Mut(A.Float) -> ignore(L.build_call destroyMutFloat [| (lookup s) |] "" builder);
-                                      ignore(mut_local_vars = StringMap.remove s mut_local_vars);
+                    | A.Mut(A.Float) -> (*ignore(L.build_call destroyMutFloat [| (lookup s) |] "" builder);*)
                                       local_vars = StringMap.remove s local_vars
-                    | A.Mut(A.Bool) -> ignore(L.build_call destroyMutBool [| (lookup s) |] "" builder);
-                                      ignore(mut_local_vars = StringMap.remove s mut_local_vars);
+                    | A.Mut(A.Bool) -> (*ignore(L.build_call destroyMutBool [| (lookup s) |] "" builder);*)
                                       local_vars = StringMap.remove s local_vars
                     | _ -> local_vars = local_vars)
       | _ -> (local_vars = local_vars)
     in
 
     let free_mut key value = match value with 
-             | A.Mut(A.Int) -> (ignore(L.build_call destroyMutInt [| (lookup key) |] "" builder);)
-             | A.Mut(A.Float) -> (ignore(L.build_call destroyMutFloat [| (lookup key) |] "" builder);)
-             | A.Mut(A.Bool) -> (ignore(L.build_call destroyMutBool [| (lookup key) |] "" builder);)
+             | A.Mut(A.Int) -> (ignore(L.build_call destroyMutInt [| (lookup_mut key) |] "" builder);)
+             | A.Mut(A.Float) -> (ignore(L.build_call destroyMutFloat [| (lookup_mut key) |] "" builder);)
+             | A.Mut(A.Bool) -> (ignore(L.build_call destroyMutBool [| (lookup_mut key) |] "" builder);)
              | _ -> ()
     in
 
@@ -374,14 +338,7 @@ let translate (globals, functions) =
         SIntLit i  -> L.const_int i32_t i
       | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
       | SFloatLit f -> L.const_float float_t f
-      (*|SCharLit c -> L... c*)
-      (*| SStrLit s -> s*)
-      | SVar s       -> (match typ with 
-                            | A.Mut(A.Int) -> (L.build_call readMutInt [| (lookup s) |] "" builder)
-
-                            | A.Mut(A.Float) -> (L.build_call readMutFloat [| (lookup s) |] "" builder)
-                            | A.Mut(A.Bool) -> (L.build_call readMutBool [| (lookup s) |] "" builder)
-                            | _ -> L.build_load (lookup s) s builder)
+      | SVar s       -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = (match (fst e) with
                                     | A.Mut(x) when typ = A.Ref(x) -> 
                                         (match (snd e) with 
@@ -452,8 +409,6 @@ let translate (globals, functions) =
         SIntLit i  -> L.const_int i32_t i
       | SBoolLit b  -> L.const_int i1_t (if b then 1 else 0)
       | SFloatLit f -> L.const_float float_t f
-      (*|SCharLit c -> L... c*)
-      (*| SStrLit s -> s*)
       | SVar s       -> (match typ with 
                             | A.Mut(A.Int) -> (L.build_call readMutInt [| (lookup s) |] "" builder)
 
@@ -547,7 +502,8 @@ let translate (globals, functions) =
     let rec build_stmt builder = function
         SBlock sl -> List.fold_left build_stmt builder sl
       | SExpr e -> ignore(build_expr builder e); builder
-      | SReturn e -> ignore(L.build_ret (build_expr builder e) builder); builder
+      | SReturn e -> ignore(L.build_ret (build_expr builder e) builder);
+                    ignore(StringMap.iter free_mut mut_local_types); builder
       | SIf (predicate, then_stmt, else_stmt) ->
         let bool_val = build_expr builder predicate in
 
@@ -601,12 +557,11 @@ let translate (globals, functions) =
     (* Build the code for each statement in the function *)
     let func_builder = build_stmt builder (SBlock fdecl.sbody) in
 
-    ignore(StringMap.iter free_mut mut_local_vars);
-
     (* Add a return if the last block falls off the end *)
     add_terminal func_builder (L.build_ret (L.const_int i32_t 0))
 
+
 in
 
-  List.iter build_fnction_body functions;
+  List.iter build_function_body functions;
   the_module

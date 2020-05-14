@@ -7,8 +7,6 @@ and sx =
     SIntLit of int
   | SFloatLit of float
   | SBoolLit of bool
-  | SCharLit of char
-  | SStrLit of string
   | SVar of string
   | SBinop of sexpr * op * sexpr
   | SAssign of string * sexpr
@@ -40,8 +38,6 @@ let rec string_of_sexpr (t, e) =
       | SFloatLit(l) -> string_of_float l
       | SBoolLit(true) -> "true"
       | SBoolLit(false) -> "false"
-      | SCharLit(c) -> String.make 1 c
-      | SStrLit(s) -> s
       | SVar(s) -> s
       | SBinop(e1, o, e2) ->
         string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2

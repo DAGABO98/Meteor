@@ -8,16 +8,14 @@ open Ast
 %token PLUS MINUS TIMES DIVIDE
 %token ASSIGN
 %token FPLUS FMINUS FTIMES FDIVIDE
-%token INTTYPE FLOATTYPE BOOLTYPE CHARTYPE STRINGTYPE FOO
+%token INTTYPE FLOATTYPE BOOLTYPE
 %token NOT AND OR EQ FEQ NEQ FNEQ LT FLT GT FGT LEQ FLEQ GEQ FGEQ
-%token LET NEW IF ELSE FUNC MUT WHILE FOR PRINT
-%token RETURN COMMA COMP ARROW REF DOT
+%token LET IF ELSE FUNC MUT WHILE FOR
+%token RETURN COMMA COMP ARROW REF
 
 %token <int> INTLIT
 %token <float> FLOATLIT
 %token <bool> BLIT
-%token <char> CHARLIT
-%token <string> STRLIT
 %token <string> VAR
 
 %token EOF
@@ -51,7 +49,6 @@ vdecl_list:
   | /*nothing*/ { [] }
   | vdecl SEMI vdecl_list  {  $1 :: $3 }
 
-/* int x */
 vdecl:
   LET VAR ARROW typ { ($4, $2) }
 
@@ -65,11 +62,8 @@ typ:
 
 b_typ:
     | INTTYPE       { Int }
-    | CHARTYPE      { Char }
     | FLOATTYPE     { Float }
     | BOOLTYPE      { Bool }
-    | STRINGTYPE    { String }
-    | FOO           { Foo }
 
 
 /* fdecl */
@@ -117,8 +111,6 @@ expr:
   | INTLIT           { IntLit($1)             }
   | FLOATLIT         { FloatLit($1)           }
   | BLIT             { BoolLit($1)            }
-  | CHARLIT          { CharLit($1)            }
-  | STRLIT           { StrLit($1)             }
   | VAR              { Var($1)                 }
   /* BOOLEAN OPERATIONS */
   | expr AND expr    { Binop($1, And, $3) }
