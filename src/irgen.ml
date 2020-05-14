@@ -269,7 +269,7 @@ let translate (globals, functions) =
     List.fold_left function_decl StringMap.empty functions in
 
   (* Fill in the body of the given function *)
-  letbuild_fnction_body fdecl =
+  let build_fnction_body fdecl =
     let (the_function, _) = StringMap.find fdecl.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
