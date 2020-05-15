@@ -1,0 +1,160 @@
+; ModuleID = 'Meteor'
+source_filename = "Meteor"
+
+%MutInt = type { i32* }
+%MutFloat = type { float* }
+%MutBool = type { i1* }
+%RefInt = type { i32* }
+%RefFloat = type { float* }
+%RefBool = type { i1* }
+
+@fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+@fmt.1 = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+declare void @initMutInt(%MutInt*)
+
+declare void @initMutFloat(%MutFloat*)
+
+declare void @initMutBool(%MutBool*)
+
+declare void @assignMutInt(%MutInt*, i32)
+
+declare void @assignMutFloat(%MutFloat*, float)
+
+declare void @assignMutBool(%MutBool*, i1)
+
+declare i32 @readMutInt(%MutInt*)
+
+declare float @readMutFloat(%MutFloat*)
+
+declare i1 @readMutBool(%MutBool*)
+
+declare void @destroyMutInt(%MutInt*)
+
+declare void @destroyMutFloat(%MutFloat*)
+
+declare void @destroyMutBool(%MutBool*)
+
+declare void @initRefInt(%RefInt*)
+
+declare void @initRefFloat(%RefFloat*)
+
+declare void @initRefBool(%RefBool*)
+
+declare void @assignRefIntMut(%RefInt*, %MutInt*)
+
+declare void @assignRefIntRef(%RefInt*, %RefInt*)
+
+declare void @assignRefFloatMut(%RefFloat*, %MutFloat*)
+
+declare void @assignRefFloatRef(%RefFloat*, %RefFloat*)
+
+declare void @assignRefBoolMut(%RefBool*, %MutBool*)
+
+declare void @assignRefBoolRef(%RefBool*, %RefBool*)
+
+declare i32 @readRefInt(%RefInt*)
+
+declare float @readRefFloat(%RefFloat*)
+
+declare i1 @readRefBool(%RefBool*)
+
+define float @gpi(%MutFloat %a) {
+entry:
+  %a1 = alloca %MutFloat
+  store %MutFloat %a, %MutFloat* %a1
+  %result = alloca float
+  %pi = alloca float
+  %iter = alloca float
+  %flag = alloca i1
+  store float 3.000000e+00, float* %iter
+  store float 4.000000e+00, float* %pi
+  store i1 false, i1* %flag
+  br label %while
+
+while:                                            ; preds = %if_end, %entry
+  %iter2 = load float, float* %iter
+  %0 = call float @readMutFloat(%MutFloat* %a1)
+  %tmp = fcmp olt float %iter2, %0
+  br i1 %tmp, label %while_body, label %while_end
+
+while_body:                                       ; preds = %while
+  %flag3 = load i1, i1* %flag
+  br i1 %flag3, label %then, label %else
+
+then:                                             ; preds = %while_body
+  %pi4 = load float, float* %pi
+  %iter5 = load float, float* %iter
+  %tmp6 = fdiv float 4.000000e+00, %iter5
+  %tmp7 = fadd float %pi4, %tmp6
+  store float %tmp7, float* %pi
+  store i1 false, i1* %flag
+  br label %if_end
+
+else:                                             ; preds = %while_body
+  %pi8 = load float, float* %pi
+  %iter9 = load float, float* %iter
+  %tmp10 = fdiv float 4.000000e+00, %iter9
+  %tmp11 = fsub float %pi8, %tmp10
+  store float %tmp11, float* %pi
+  store i1 true, i1* %flag
+  br label %if_end
+
+if_end:                                           ; preds = %else, %then
+  %iter12 = load float, float* %iter
+  %tmp13 = fadd float %iter12, 2.000000e+00
+  store float %tmp13, float* %iter
+  br label %while
+
+while_end:                                        ; preds = %while
+  %pi14 = load float, float* %pi
+  %tmp15 = fcmp olt float %pi14, 0x400921FF20000000
+  br i1 %tmp15, label %then16, label %else17
+
+then16:                                           ; preds = %while_end
+  %printf = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt, i32 0, i32 0), i32 1)
+  br label %if_end19
+
+else17:                                           ; preds = %while_end
+  %printf18 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt, i32 0, i32 0), i32 0)
+  br label %if_end19
+
+if_end19:                                         ; preds = %else17, %then16
+  %pi20 = load float, float* %pi
+  %tmp21 = fcmp ogt float %pi20, 0x400921CAC0000000
+  br i1 %tmp21, label %then22, label %else24
+
+then22:                                           ; preds = %if_end19
+  %printf23 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt, i32 0, i32 0), i32 1)
+  br label %if_end26
+
+else24:                                           ; preds = %if_end19
+  %printf25 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt, i32 0, i32 0), i32 0)
+  br label %if_end26
+
+if_end26:                                         ; preds = %else24, %then22
+  %pi27 = load float, float* %pi
+  store float %pi27, float* %result
+  %result28 = load float, float* %result
+  ret float %result28
+}
+
+define i32 @main() {
+entry:
+  %x = alloca %MutFloat
+  call void @initMutFloat(%MutFloat* %x)
+  %y = alloca %MutFloat
+  call void @initMutFloat(%MutFloat* %y)
+  %test = alloca float
+  call void @assignMutFloat(%MutFloat* %y, float 1.000000e+05)
+  %y1 = load %MutFloat, %MutFloat* %y
+  %gpi_result = call float @gpi(%MutFloat %y1)
+  store float %gpi_result, float* %test
+  ret i32 0
+  call void @destroyMutFloat(%MutFloat* %x)
+  call void @destroyMutFloat(%MutFloat* %y)
+  ret i32 0
+}
+

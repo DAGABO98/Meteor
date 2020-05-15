@@ -1,0 +1,113 @@
+; ModuleID = 'Meteor'
+source_filename = "Meteor"
+
+%MutInt = type { i32* }
+%MutFloat = type { float* }
+%MutBool = type { i1* }
+%RefInt = type { i32* }
+%RefFloat = type { float* }
+%RefBool = type { i1* }
+
+@fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+@fmt.1 = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+declare void @initMutInt(%MutInt*)
+
+declare void @initMutFloat(%MutFloat*)
+
+declare void @initMutBool(%MutBool*)
+
+declare void @assignMutInt(%MutInt*, i32)
+
+declare void @assignMutFloat(%MutFloat*, float)
+
+declare void @assignMutBool(%MutBool*, i1)
+
+declare i32 @readMutInt(%MutInt*)
+
+declare float @readMutFloat(%MutFloat*)
+
+declare i1 @readMutBool(%MutBool*)
+
+declare void @destroyMutInt(%MutInt*)
+
+declare void @destroyMutFloat(%MutFloat*)
+
+declare void @destroyMutBool(%MutBool*)
+
+declare void @initRefInt(%RefInt*)
+
+declare void @initRefFloat(%RefFloat*)
+
+declare void @initRefBool(%RefBool*)
+
+declare void @assignRefIntMut(%RefInt*, %MutInt*)
+
+declare void @assignRefIntRef(%RefInt*, %RefInt*)
+
+declare void @assignRefFloatMut(%RefFloat*, %MutFloat*)
+
+declare void @assignRefFloatRef(%RefFloat*, %RefFloat*)
+
+declare void @assignRefBoolMut(%RefBool*, %MutBool*)
+
+declare void @assignRefBoolRef(%RefBool*, %RefBool*)
+
+declare i32 @readRefInt(%RefInt*)
+
+declare float @readRefFloat(%RefFloat*)
+
+declare i1 @readRefBool(%RefBool*)
+
+define i32 @add(i32 %number_1, i32 %number_2) {
+entry:
+  %number_11 = alloca i32
+  store i32 %number_1, i32* %number_11
+  %number_22 = alloca i32
+  store i32 %number_2, i32* %number_22
+  %number_13 = load i32, i32* %number_11
+  %number_24 = load i32, i32* %number_22
+  %tmp = add i32 %number_13, %number_24
+  ret i32 %tmp
+}
+
+define i32 @main() {
+entry:
+  %number_1 = alloca i32
+  %number_2 = alloca i32
+  %result = alloca i32
+  %number_3 = alloca i32
+  %hello = alloca i1
+  store i32 2, i32* %number_1
+  store i32 3, i32* %number_2
+  %number_21 = load i32, i32* %number_2
+  %number_12 = load i32, i32* %number_1
+  %add_result = call i32 @add(i32 %number_12, i32 %number_21)
+  store i32 %add_result, i32* %result
+  %result3 = load i32, i32* %result
+  %printf = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 %result3)
+  %number_24 = load i32, i32* %number_2
+  %number_15 = load i32, i32* %number_1
+  %add_result6 = call i32 @add(i32 %number_15, i32 %number_24)
+  %tmp = add i32 %add_result6, 4
+  store i32 %tmp, i32* %number_3
+  %number_37 = load i32, i32* %number_3
+  %printf8 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 %number_37)
+  store i1 true, i1* %hello
+  %hello9 = load i1, i1* %hello
+  br i1 %hello9, label %then, label %else
+
+then:                                             ; preds = %entry
+  %printf10 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 1)
+  br label %if_end
+
+else:                                             ; preds = %entry
+  %printf11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 10000000)
+  br label %if_end
+
+if_end:                                           ; preds = %else, %then
+  ret i32 0
+}
+

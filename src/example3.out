@@ -1,0 +1,107 @@
+; ModuleID = 'Meteor'
+source_filename = "Meteor"
+
+%MutInt = type { i32* }
+%MutFloat = type { float* }
+%MutBool = type { i1* }
+%RefInt = type { i32* }
+%RefFloat = type { float* }
+%RefBool = type { i1* }
+
+@fmt = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+@fmt.1 = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+declare i32 @printf(i8*, ...)
+
+declare void @initMutInt(%MutInt*)
+
+declare void @initMutFloat(%MutFloat*)
+
+declare void @initMutBool(%MutBool*)
+
+declare void @assignMutInt(%MutInt*, i32)
+
+declare void @assignMutFloat(%MutFloat*, float)
+
+declare void @assignMutBool(%MutBool*, i1)
+
+declare i32 @readMutInt(%MutInt*)
+
+declare float @readMutFloat(%MutFloat*)
+
+declare i1 @readMutBool(%MutBool*)
+
+declare void @destroyMutInt(%MutInt*)
+
+declare void @destroyMutFloat(%MutFloat*)
+
+declare void @destroyMutBool(%MutBool*)
+
+declare void @initRefInt(%RefInt*)
+
+declare void @initRefFloat(%RefFloat*)
+
+declare void @initRefBool(%RefBool*)
+
+declare void @assignRefIntMut(%RefInt*, %MutInt*)
+
+declare void @assignRefIntRef(%RefInt*, %RefInt*)
+
+declare void @assignRefFloatMut(%RefFloat*, %MutFloat*)
+
+declare void @assignRefFloatRef(%RefFloat*, %RefFloat*)
+
+declare void @assignRefBoolMut(%RefBool*, %MutBool*)
+
+declare void @assignRefBoolRef(%RefBool*, %RefBool*)
+
+declare i32 @readRefInt(%RefInt*)
+
+declare float @readRefFloat(%RefFloat*)
+
+declare i1 @readRefBool(%RefBool*)
+
+define i32 @add(%MutInt %n1, %RefInt %n2, i32 %n3) {
+entry:
+  %n11 = alloca %MutInt
+  store %MutInt %n1, %MutInt* %n11
+  %n22 = alloca %RefInt
+  store %RefInt %n2, %RefInt* %n22
+  %n33 = alloca i32
+  store i32 %n3, i32* %n33
+  %0 = call i32 @readMutInt(%MutInt* %n11)
+  %1 = call i32 @readRefInt(%RefInt* %n22)
+  %tmp = add i32 %0, %1
+  %n34 = load i32, i32* %n33
+  %tmp5 = add i32 %tmp, %n34
+  ret i32 %tmp5
+}
+
+define i32 @main() {
+entry:
+  %number_1 = alloca %MutInt
+  call void @initMutInt(%MutInt* %number_1)
+  %number_2 = alloca %RefInt
+  call void @initRefInt(%RefInt* %number_2)
+  %number_4 = alloca %MutInt
+  call void @initMutInt(%MutInt* %number_4)
+  %number_3 = alloca i32
+  %result = alloca i32
+  call void @assignMutInt(%MutInt* %number_1, i32 2)
+  call void @assignRefIntMut(%RefInt* %number_2, %MutInt* %number_1)
+  store i32 3, i32* %number_3
+  %0 = call i32 @readRefInt(%RefInt* %number_2)
+  call void @assignMutInt(%MutInt* %number_4, i32 %0)
+  %number_31 = load i32, i32* %number_3
+  %number_22 = load %RefInt, %RefInt* %number_2
+  %number_13 = load %MutInt, %MutInt* %number_1
+  %add_result = call i32 @add(%MutInt %number_13, %RefInt %number_22, i32 %number_31)
+  store i32 %add_result, i32* %result
+  %result4 = load i32, i32* %result
+  %printf = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt.1, i32 0, i32 0), i32 %result4)
+  ret i32 0
+  call void @destroyMutInt(%MutInt* %number_1)
+  call void @destroyMutInt(%MutInt* %number_4)
+  ret i32 0
+}
+
