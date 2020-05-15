@@ -7,12 +7,31 @@ func gpi (a -> mut &float) -> float {
 
     iter = 3.0;
     pi = 4.0;
-    flag = true;
+    flag = false;
 
     while (iter <. a ){
-        if ( flag ) {pi = pi +. (4.0 /. iter) ;}
-        else {pi = pi -. (4.0 /. iter);}
+        if ( flag ) {
+            pi = pi +. (4.0 /. iter);
+            flag = false;
+        }
+        else {
+            pi = pi -. (4.0 /. iter);
+            flag = true;
+        }
         iter = iter +. 2.0;
+    }
+    
+    if (pi <. 3.1416){
+        print(1);
+    }
+    else {
+        print(0);
+    }
+    if( pi >. 3.1415 ) {
+        print(1);
+    }
+    else {
+        print(0);
     }
 
     result = pi;
@@ -23,7 +42,7 @@ func main() -> int {
   let x -> mut &float;
   let y -> mut &float;
   let test -> float;
-  y = 14.0;
-  gpi(y);  
+  y = 100000.0;
+  test = gpi(y);
   return 0;
 }
