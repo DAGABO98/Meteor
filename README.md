@@ -11,13 +11,13 @@ To run the compile program: ./a.out
 
 
 ## Contributors
-Manager: Andrew de Soler (apd2149)
+Manager: Andrew de Soler
 
-Tester: Cesar Ramos Medina (cer2178)
+Tester: Cesar Ramos Medina
 
-System Architect: Daniel Garces (dg3008)
+System Architect: Daniel Garces
 
-Language Guru: Yefri Gaitan (yg2548)
+Language Guru: Yefri Gaitan
 
 ## Requirements
 - gcc 7.4.0 or clang 6.0.0 
